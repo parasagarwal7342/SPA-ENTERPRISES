@@ -95,7 +95,7 @@ const Home: React.FC = () => {
         <div className="max-w-[1600px] mx-auto px-10 overflow-x-auto whitespace-nowrap scrollbar-hide">
            <div className="flex items-center justify-between gap-12">
               {[
-                { title: 'Free Global Shipping', desc: 'On orders over ₹1,999', icon: Truck },
+                { title: 'Dynamic Shipping Core', desc: 'Free in Delhi & PAN India >₹4,999', icon: Truck },
                 { title: '24-Hour Assurance', desc: 'Secure protocol protection', icon: Shield },
                 { title: '30-Day Returns', desc: 'Easy exchange policy', icon: RotateCcw },
                 { title: 'Official Distributor', desc: '100% Authentic registry', icon: ShieldCheck },

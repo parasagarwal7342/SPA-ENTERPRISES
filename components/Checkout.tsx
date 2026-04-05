@@ -17,8 +17,11 @@ const Checkout: React.FC = () => {
     const [form, setForm] = useState({ name: '', email: '', address: '' });
     const [authForm, setAuthForm] = useState({ email: '', password: '', isRegister: true });
     const [paymentId, setPaymentId] = useState('');
+    const [shippingRegion, setShippingRegion] = useState<'delhi' | 'india' | 'global'>('india');
 
-    const totalAmount = cartItems.reduce((acc, p) => acc + parseInt(p.price?.replace(/[₹,]/g, '') || '0'), 0);
+    const subTotalAmount = cartItems.reduce((acc, p) => acc + parseInt(p.price?.replace(/[₹,]/g, '') || '0'), 0);
+    const shippingFee = shippingRegion === 'delhi' ? 0 : shippingRegion === 'global' ? 2500 : subTotalAmount >= 4999 ? 0 : 500;
+    const totalAmount = subTotalAmount + shippingFee;
 
     const handleRazorpayPayment = async () => {
         if (!form.name || !form.email || !form.address) {
@@ -146,8 +149,13 @@ const Checkout: React.FC = () => {
                             <div className="bg-white p-12 rounded-[56px] border border-slate-200 shadow-2xl shadow-slate-200/50 flex flex-col h-fit sticky top-40">
                                 <h3 className="text-2xl font-bold text-slate-930 mb-8 border-b border-slate-50 pb-6 uppercase tracking-tight">Order Summary</h3>
                                 <div className="space-y-6 flex-grow">
-                                    <div className="flex justify-between text-sm font-bold text-slate-400 uppercase tracking-widest"><span>Subtotal</span> <span>₹{totalAmount.toLocaleString()}</span></div>
-                                    <div className="flex justify-between text-sm font-bold text-slate-400 uppercase tracking-widest"><span>Shipping</span> <span className="text-green-600">FREE</span></div>
+                                    <div className="flex justify-between text-sm font-bold text-slate-400 uppercase tracking-widest"><span>Subtotal</span> <span>₹{subTotalAmount.toLocaleString()}</span></div>
+                                    <div className="flex justify-between text-sm font-bold text-slate-400 uppercase tracking-widest">
+                                       <span>Shipping</span> 
+                                       <span className={shippingFee === 0 ? "text-green-600" : "text-blue-600"}>
+                                          {shippingFee === 0 ? 'FREE' : `+₹${shippingFee.toLocaleString()}`}
+                                       </span>
+                                    </div>
                                     <div className="flex justify-between text-sm font-bold text-slate-400 uppercase tracking-widest"><span>GST</span> <span>Included</span></div>
                                 </div>
                                 <div className="mt-12 pt-8 border-t border-slate-100 flex justify-between items-baseline mb-12">
@@ -226,19 +234,29 @@ const Checkout: React.FC = () => {
 
                                    <div className="grid md:grid-cols-2 gap-10">
                                       <div className="space-y-6">
-                                         <div className="flex flex-col gap-3">
-                                            <label className="text-[10px] font-black tracking-[4px] uppercase text-slate-400 ml-4">Full Name *</label>
-                                            <input value={form.name} onChange={e => setForm({...form, name: e.target.value})} className="w-full bg-slate-50 border border-slate-100 rounded-2xl p-5 text-sm font-bold outline-none focus:bg-white focus:border-blue-600 transition-all" placeholder="e.g. Paras Sharma" />
-                                         </div>
-                                         <div className="flex flex-col gap-3">
-                                            <label className="text-[10px] font-black tracking-[4px] uppercase text-slate-400 ml-4">Email Address *</label>
-                                            <input type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} className="w-full bg-slate-50 border border-slate-100 rounded-2xl p-5 text-sm font-bold outline-none focus:bg-white focus:border-blue-600 transition-all" placeholder="your@email.com" />
-                                         </div>
-                                      </div>
-                                      <div className="flex flex-col gap-3">
-                                         <label className="text-[10px] font-black tracking-[4px] uppercase text-slate-400 ml-4">Delivery Address *</label>
-                                         <textarea value={form.address} onChange={e => setForm({...form, address: e.target.value})} className="w-full bg-slate-50 border border-slate-100 rounded-[24px] p-5 text-sm font-bold outline-none focus:bg-white focus:border-blue-600 transition-all resize-none h-full" rows={5} placeholder="Full delivery address with PIN code..." />
-                                      </div>
+                                          <div className="flex flex-col gap-3">
+                                             <label className="text-[10px] font-black tracking-[4px] uppercase text-slate-400 ml-4">Full Name *</label>
+                                             <input value={form.name} onChange={e => setForm({...form, name: e.target.value})} className="w-full bg-slate-50 border border-slate-100 rounded-2xl p-5 text-sm font-bold outline-none focus:bg-white focus:border-blue-600 transition-all" placeholder="e.g. Paras Sharma" />
+                                          </div>
+                                          <div className="flex flex-col gap-3">
+                                             <label className="text-[10px] font-black tracking-[4px] uppercase text-slate-400 ml-4">Email Address *</label>
+                                             <input type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} className="w-full bg-slate-50 border border-slate-100 rounded-2xl p-5 text-sm font-bold outline-none focus:bg-white focus:border-blue-600 transition-all" placeholder="your@email.com" />
+                                          </div>
+                                       </div>
+                                       <div className="flex flex-col gap-6">
+                                          <div className="flex flex-col gap-3">
+                                             <label className="text-[10px] font-black tracking-[4px] uppercase text-slate-400 ml-4">Delivery Node *</label>
+                                             <select value={shippingRegion} onChange={(e: any) => setShippingRegion(e.target.value)} className="w-full bg-slate-50 border border-slate-100 rounded-2xl p-5 text-sm font-bold outline-none focus:bg-white focus:border-blue-600 transition-all appearance-none cursor-pointer">
+                                                <option value="delhi">Delhi / NCR (Zero-Cost)</option>
+                                                <option value="india">India (Complimentary above ₹4,999)</option>
+                                                <option value="global">Global Verified Routing (Fixed Cost)</option>
+                                             </select>
+                                          </div>
+                                          <div className="flex flex-col gap-3 flex-grow">
+                                             <label className="text-[10px] font-black tracking-[4px] uppercase text-slate-400 ml-4">Delivery Address *</label>
+                                             <textarea value={form.address} onChange={e => setForm({...form, address: e.target.value})} className="w-full bg-slate-50 border border-slate-100 rounded-[24px] p-5 text-sm font-bold outline-none focus:bg-white focus:border-blue-600 transition-all resize-none flex-grow" placeholder="Full delivery address with PIN code..." />
+                                          </div>
+                                       </div>
                                    </div>
 
                                    <div className="mt-14 bg-slate-900 rounded-[48px] p-10 text-white flex flex-col md:flex-row items-center justify-between gap-10">

@@ -97,7 +97,7 @@ const Home: React.FC = () => {
               {[
                 { title: 'Dynamic Shipping Core', desc: 'Free in Delhi & PAN India >₹4,999', icon: Truck },
                 { title: '24-Hour Assurance', desc: 'Secure protocol protection', icon: Shield },
-                { title: '30-Day Returns', desc: 'Easy exchange policy', icon: RotateCcw },
+                { title: '7-Day Returns', desc: 'Easy exchange policy', icon: RotateCcw },
                 { title: 'Official Distributor', desc: '100% Authentic registry', icon: ShieldCheck },
               ].map((item, i) => (
                 <div key={i} className="flex items-center gap-4 group">

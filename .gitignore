@@ -1,0 +1,12 @@
+# SPA Enterprise - .gitignore
+node_modules/
+dist/
+.env
+*.env.local
+*.env.production
+server/autopost.db
+server/db.json
+uploads/
+.DS_Store
+*.log
+.vite/

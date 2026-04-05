@@ -1,0 +1,71 @@
+:root {
+  font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light;
+  color: #0f172a;
+  background-color: #f8fafc;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  /* Professional Light Palette */
+  --bg-main: #f8fafc;
+  --surface: #ffffff;
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --secondary: #64748b;
+  --accent: #f59e0b;
+  --border: #e2e8f0;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --elevation-1: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --elevation-2: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .premium-card {
+    @apply bg-white border border-[#e2e8f0] rounded-2xl transition-all duration-300;
+    box-shadow: var(--elevation-1);
+  }
+
+  .premium-card:hover {
+    @apply -translate-y-1;
+    box-shadow: var(--elevation-2);
+  }
+
+  .premium-button {
+    @apply px-6 py-2.5 rounded-lg font-bold transition-all duration-200 flex items-center justify-center gap-2;
+    background-color: var(--primary);
+    color: white;
+  }
+
+  .premium-button:hover {
+    background-color: var(--primary-hover);
+    @apply shadow-md;
+  }
+
+  .premium-input {
+    @apply w-full bg-white border border-[#e2e8f0] rounded-xl px-4 py-3 text-sm text-[#0f172a] outline-none transition-all duration-200;
+  }
+
+  .premium-input:focus {
+    @apply border-[#2563eb] ring-2 ring-[#2563eb]/20;
+  }
+}
+
+body {
+  margin: 0;
+  display: block;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: var(--bg-main);
+  color: var(--text-main);
+}

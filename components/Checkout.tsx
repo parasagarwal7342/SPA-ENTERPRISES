@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useProducts } from '../ProductContext';
+import { useAuth } from '../AuthContext';
 import { ShoppingCart, ShieldCheck, CreditCard, ChevronRight, CheckCircle2, ArrowLeft, Zap, ArrowRight, Package, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -10,9 +11,11 @@ declare global {
 
 const Checkout: React.FC = () => {
     const { cartItems, clearCart } = useProducts();
-    const [step, setStep] = useState<'cart' | 'payment' | 'success'>('cart');
+    const { isAuthenticated, login, user } = useAuth();
+    const [step, setStep] = useState<'cart' | 'auth' | 'payment' | 'success'>('cart');
     const [isProcessing, setIsProcessing] = useState(false);
     const [form, setForm] = useState({ name: '', email: '', address: '' });
+    const [authForm, setAuthForm] = useState({ email: '', password: '', isRegister: true });
     const [paymentId, setPaymentId] = useState('');
 
     const totalAmount = cartItems.reduce((acc, p) => acc + parseInt(p.price?.replace(/[₹,]/g, '') || '0'), 0);
@@ -103,13 +106,14 @@ const Checkout: React.FC = () => {
                    <div className="flex items-center gap-4">
                       {[
                         { id: 'cart', label: 'Registry' },
+                        { id: 'auth', label: 'Client Identity' },
                         { id: 'payment', label: 'Verification' },
                         { id: 'success', label: 'Complete' }
                       ].map((s, i) => (
                         <div key={s.id} className={`flex items-center gap-3 ${step === s.id ? 'text-blue-600' : 'text-slate-300'}`}>
                            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-black text-xs border-2 ${step === s.id ? 'border-blue-600 bg-blue-50' : 'border-slate-100'}`}>{i+1}</div>
                            <span className="text-[10px] font-black uppercase tracking-widest hidden sm:block">{s.label}</span>
-                           {i < 2 && <ChevronRight size={14} className="text-slate-200" />}
+                           {i < 3 && <ChevronRight size={14} className="text-slate-200" />}
                         </div>
                       ))}
                    </div>
@@ -151,7 +155,14 @@ const Checkout: React.FC = () => {
                                     <span className="text-5xl font-black text-slate-930 tracking-tighter">₹{totalAmount.toLocaleString()}</span>
                                 </div>
                                 <button
-                                   onClick={() => setStep('payment')}
+                                   onClick={() => {
+                                       if(isAuthenticated) {
+                                           setForm({...form, name: user?.name || '', email: user?.email || ''});
+                                           setStep('payment');
+                                       } else {
+                                           setStep('auth');
+                                       }
+                                   }}
                                    disabled={cartItems.length === 0}
                                    className="w-full bg-slate-900 text-white py-6 rounded-3xl font-black text-xs uppercase tracking-[5px] hover:bg-slate-800 transition-all shadow-2xl shadow-slate-200 flex items-center justify-center gap-4 group disabled:opacity-40"
                                 >
@@ -162,6 +173,46 @@ const Checkout: React.FC = () => {
                                    <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest">Secured by Razorpay</p>
                                 </div>
                             </div>
+                        </motion.div>
+                    )}
+
+                    {/* STEP 1.5: CLIENT AUTHENTICATION */}
+                    {step === 'auth' && (
+                        <motion.div key="auth" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="max-w-xl mx-auto">
+                            <div className="bg-white p-12 rounded-[48px] border border-slate-200 shadow-2xl relative overflow-hidden">
+                                <h3 className="text-3xl font-black text-slate-930 mb-2 tracking-tight">{authForm.isRegister ? 'Create Client Account' : 'Client Sign-In'}</h3>
+                                <p className="text-slate-400 text-[10px] font-bold uppercase tracking-[3px] mb-10">Mandatory for SPA Protocol Orders</p>
+                                
+                                <div className="space-y-6">
+                                    <div className="flex flex-col gap-3">
+                                        <label className="text-[10px] font-black tracking-[4px] uppercase text-slate-400 ml-4">Consensus Email *</label>
+                                        <input type="email" value={authForm.email} onChange={e => setAuthForm({...authForm, email: e.target.value})} className="w-full bg-slate-50 border border-slate-100 rounded-2xl p-5 text-sm font-bold outline-none focus:bg-white focus:border-blue-600 transition-all" placeholder="client@enterprise.com" />
+                                    </div>
+                                    <div className="flex flex-col gap-3">
+                                        <label className="text-[10px] font-black tracking-[4px] uppercase text-slate-400 ml-4">Security Key *</label>
+                                        <input type="password" value={authForm.password} onChange={e => setAuthForm({...authForm, password: e.target.value})} className="w-full bg-slate-50 border border-slate-100 rounded-2xl p-5 text-sm font-bold outline-none focus:bg-white focus:border-blue-600 transition-all" placeholder="••••••••" />
+                                    </div>
+                                </div>
+
+                                <button
+                                    onClick={async () => {
+                                        if(!authForm.email || !authForm.password) return alert('Enter credentials');
+                                        await login(authForm.email, authForm.password, 'customer');
+                                        setForm({...form, name: 'Valued Customer', email: authForm.email});
+                                        setStep('payment');
+                                    }}
+                                    className="w-full mt-10 px-12 py-6 bg-blue-600 text-white rounded-3xl font-black text-xs uppercase tracking-[5px] hover:bg-blue-700 shadow-xl shadow-blue-500/20 transition-all"
+                                >
+                                    {authForm.isRegister ? 'Register & Continue' : 'Authenticate & Continue'}
+                                </button>
+
+                                <button onClick={() => setAuthForm({...authForm, isRegister: !authForm.isRegister})} className="w-full mt-6 text-[10px] font-black tracking-[2px] uppercase text-slate-400 hover:text-blue-600 transition-colors">
+                                    {authForm.isRegister ? 'Already registered? Sign In' : 'Need an account? Register'}
+                                </button>
+                            </div>
+                            <button onClick={() => setStep('cart')} className="mt-8 mx-auto text-[10px] font-black uppercase tracking-[4px] text-slate-400 hover:text-slate-600 transition-colors flex items-center gap-3">
+                               <ArrowLeft size={16} /> Back to Registry
+                            </button>
                         </motion.div>
                     )}
 

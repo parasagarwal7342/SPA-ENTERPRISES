@@ -123,7 +123,7 @@ const Navbar: React.FC<NavbarProps> = ({ currentPath }) => {
                       <img src={user?.avatar} alt="Profile" className="w-10 h-10 rounded-xl border border-slate-200 group-hover:border-blue-300 transition-all hover:scale-105" />
                    </div>
                ) : (
-                   <a href="#login" className="bg-slate-930 text-white px-7 py-3 rounded-2xl text-[11px] font-black uppercase tracking-[3px] flex items-center gap-3 hover:bg-slate-800 shadow-xl shadow-slate-200 transition-all">
+                   <a href="#login" className="bg-slate-900 text-white px-7 py-3 rounded-2xl text-[11px] font-black uppercase tracking-[3px] flex items-center gap-3 hover:bg-slate-800 shadow-xl shadow-slate-200 transition-all">
                       <User size={18} /> Initialize Login
                    </a>
                )}

@@ -26,7 +26,8 @@ const Checkout: React.FC = () => {
 
         try {
             // Step 1: Create order on backend
-            const res = await fetch('http://localhost:5000/api/payment/create-order', {
+            const API_BASE_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
+            const res = await fetch(`${API_BASE_URL}/api/payment/create-order`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ amount: totalAmount, currency: 'INR', receipt: `ord_${Date.now()}` })
@@ -57,7 +58,8 @@ const Checkout: React.FC = () => {
                 theme: { color: '#2563EB' },
                 handler: async (response: any) => {
                     // Step 4: Verify payment signature on backend
-                    const verifyRes = await fetch('http://localhost:5000/api/payment/verify', {
+                    const API_BASE_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
+                    const verifyRes = await fetch(`${API_BASE_URL}/api/payment/verify`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(response)

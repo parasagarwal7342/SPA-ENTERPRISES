@@ -87,7 +87,8 @@ const CreatePost: React.FC<{ password: string }> = ({ password }) => {
     const handleGenerate = async () => {
         setStatus('generating');
         try {
-            const res = await fetch('http://localhost:5000/api/autopost/generate', {
+            const API_BASE_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
+            const res = await fetch(`${API_BASE_URL}/api/autopost/generate`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'x-app-password': password },
                 body: JSON.stringify({ topic, brand, tone, platforms, generateImage: genImage, audience: 'General Audience' })
@@ -105,7 +106,8 @@ const CreatePost: React.FC<{ password: string }> = ({ password }) => {
     const handlePost = async () => {
         setStatus('posting');
         try {
-            const res = await fetch('http://localhost:5000/api/autopost/post', {
+            const API_BASE_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
+            const res = await fetch(`${API_BASE_URL}/api/autopost/post`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'x-app-password': password },
                 body: JSON.stringify({
@@ -267,7 +269,8 @@ const PostHistory: React.FC<{ password: string }> = ({ password }) => {
     const [history, setHistory] = useState<any[]>([]);
 
     const fetchHistory = () => {
-        fetch('http://localhost:5000/api/autopost/history', { headers: { 'x-app-password': password } })
+        const API_BASE_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
+        fetch(`${API_BASE_URL}/api/autopost/history`, { headers: { 'x-app-password': password } })
             .then(r => r.json())
             .then(data => Array.isArray(data) ? setHistory(data) : setHistory([]))
             .catch(() => setHistory([]));
@@ -304,7 +307,8 @@ const PostSchedule: React.FC<{ password: string }> = ({ password }) => {
     const [scheduled, setScheduled] = useState<any[]>([]);
 
     const fetchSchedule = () => {
-        fetch('http://localhost:5000/api/autopost/scheduled', { headers: { 'x-app-password': password } })
+        const API_BASE_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
+        fetch(`${API_BASE_URL}/api/autopost/scheduled`, { headers: { 'x-app-password': password } })
             .then(r => r.json())
             .then(data => Array.isArray(data) ? setScheduled(data) : setScheduled([]))
             .catch(() => setScheduled([]));
@@ -315,7 +319,8 @@ const PostSchedule: React.FC<{ password: string }> = ({ password }) => {
     }, []);
 
     const cancelPost = async (id: number) => {
-        await fetch(`http://localhost:5000/api/autopost/scheduled/${id}`, { 
+        const API_BASE_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
+        await fetch(`${API_BASE_URL}/api/autopost/scheduled/${id}`, { 
             method: 'DELETE',
             headers: { 'x-app-password': password } 
         });

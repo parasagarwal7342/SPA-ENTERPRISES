@@ -13,8 +13,8 @@ const Footer: React.FC = () => {
           {/* Brand Core Identity */}
           <div className="col-span-1">
             <div className="flex items-center gap-3 mb-10 group cursor-pointer" onClick={() => window.location.hash = '#home'}>
-              <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center font-black text-white transform group-hover:rotate-12 transition-all transition-shadow shadow-lg shadow-blue-100">
-                S
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center transform group-hover:rotate-12 transition-all transition-shadow shadow-lg shadow-blue-100 overflow-hidden bg-white border border-slate-100 p-1">
+                <img src="/logo.png" className="w-full h-full object-contain" alt="SPA Logo" />
               </div>
               <span className="text-2xl font-bold tracking-tight text-slate-900 leading-none">
                 SPA <span className="text-blue-600">ENTERPRISE</span>

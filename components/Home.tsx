@@ -136,7 +136,7 @@ const Home: React.FC = () => {
                   <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
                       <img 
                         src="/natgeo_final.png" 
-                        className="w-[120%] h-[120%] object-contain opacity-5 transform rotate-[-15deg] absolute -top-10 -right-10 grayscale" 
+                        className="w-[120%] h-[120%] object-contain opacity-20 transform rotate-[-15deg] absolute -top-10 -right-10 grayscale" 
                         alt="" 
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-white via-white/80 to-transparent"></div>
@@ -159,7 +159,7 @@ const Home: React.FC = () => {
                   <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
                       <img 
                         src="/shraddha_logo.png" 
-                        className="w-[120%] h-[120%] object-contain opacity-[0.07] transform rotate-[15deg] absolute -bottom-10 -left-10 grayscale invert" 
+                        className="w-[120%] h-[120%] object-contain opacity-20 transform rotate-[15deg] absolute -bottom-10 -left-10 grayscale invert" 
                         alt="" 
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-blue-700 via-blue-700/60 to-transparent"></div>

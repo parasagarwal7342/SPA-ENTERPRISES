@@ -157,6 +157,7 @@ const Home: React.FC = () => {
                       <div className="absolute inset-0 bg-gradient-to-t from-blue-700 via-blue-700/60 to-transparent"></div>
                   </div>
                   <div className="relative z-10 text-white">
+                    <img src="/shraddha_logo.png" className="w-16 h-16 rounded-full mb-6 border border-white/20 shadow-xl" alt="Shraddha Logo" />
                     <span className="inline-block px-3 py-1 bg-white/20 rounded-full text-[10px] font-black uppercase tracking-widest mb-6">Artisanal Heritage / Since 2021</span>
                     <h3 className="text-4xl font-bold mb-4">Shraddha <br/> Arts & Jewels</h3>
                     <p className="text-blue-50 text-base max-w-sm mb-10 leading-relaxed">Heritage stories woven into contemporary brass jewelry. Traditional craft for the modern profile.</p>

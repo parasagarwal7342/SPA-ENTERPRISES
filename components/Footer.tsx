@@ -111,6 +111,25 @@ const Footer: React.FC = () => {
                 <span className="flex items-center gap-2 px-3 py-1 bg-slate-50 border border-slate-100 rounded-lg"><Activity size={12} className="text-green-600" /> Latency: 42ms</span>
              </div>
           </div>
+
+          <div className="flex flex-col items-end gap-3 text-right">
+             <p className="text-[10px] font-black uppercase tracking-[3px] text-slate-400">Venture Architecture</p>
+             <a 
+               href="https://parasagarwal7342.netlify.app" 
+               target="_blank" 
+               rel="noopener noreferrer"
+               className="flex items-center gap-3 px-4 py-2 bg-slate-900 text-white rounded-xl border border-slate-800 hover:bg-slate-800 transition-all shadow-xl shadow-slate-200 group"
+             >
+                <div className="flex flex-col items-start leading-none">
+                  <span className="text-[8px] font-black text-slate-400 uppercase tracking-[2px]">Engineered & Delivered by</span>
+                  <span className="text-[11px] font-black uppercase tracking-[3px] mt-1 group-hover:text-blue-400 transition-colors">PARADITI CORP</span>
+                </div>
+                <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
+                  <Globe size={14} className="text-blue-400" />
+                </div>
+             </a>
+          </div>
+
           <div className="flex gap-10 text-[10px] font-black uppercase tracking-[5px] text-slate-400 border-l border-slate-100 pl-10 hidden lg:flex">
             <a href="#" className="hover:text-blue-600 transition-colors">Port Privacy</a>
             <a href="#" className="hover:text-blue-600 transition-colors">Protocol Manifest</a>

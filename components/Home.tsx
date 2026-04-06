@@ -133,8 +133,12 @@ const Home: React.FC = () => {
                 whileHover={{ y: -10 }}
                 className="bg-white rounded-[40px] p-12 border border-slate-100 shadow-xl overflow-hidden relative group h-[550px] flex flex-col justify-end"
               >
-                  <div className="absolute inset-0 z-0">
-                      <img src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=2000" className="w-full h-full object-cover grayscale opacity-20 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-1000 group-hover:scale-110" alt="" />
+                  <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+                      <img 
+                        src="/natgeo_final.png" 
+                        className="w-[120%] h-[120%] object-contain opacity-5 transform rotate-[-15deg] absolute -top-10 -right-10 grayscale" 
+                        alt="" 
+                      />
                       <div className="absolute inset-0 bg-gradient-to-t from-white via-white/80 to-transparent"></div>
                   </div>
                   <div className="relative z-10">
@@ -152,8 +156,12 @@ const Home: React.FC = () => {
                 whileHover={{ y: -10 }}
                 className="bg-blue-600 rounded-[40px] p-12 shadow-2xl shadow-blue-200 overflow-hidden relative group h-[550px] flex flex-col justify-end border border-blue-500"
               >
-                  <div className="absolute inset-0 z-0 text-white">
-                      <img src="https://images.unsplash.com/photo-1611085583191-a3b1a6a9344e?q=80&w=1000" className="w-full h-full object-cover opacity-20 grayscale group-hover:grayscale-0 group-hover:opacity-40 transition-all duration-1000 group-hover:scale-110" alt="" />
+                  <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+                      <img 
+                        src="/shraddha_logo.png" 
+                        className="w-[120%] h-[120%] object-contain opacity-[0.07] transform rotate-[15deg] absolute -bottom-10 -left-10 grayscale invert" 
+                        alt="" 
+                      />
                       <div className="absolute inset-0 bg-gradient-to-t from-blue-700 via-blue-700/60 to-transparent"></div>
                   </div>
                   <div className="relative z-10 text-white">

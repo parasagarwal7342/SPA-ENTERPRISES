@@ -120,17 +120,29 @@ const Footer: React.FC = () => {
                href="https://parasagarwal7342.netlify.app" 
                target="_blank" 
                rel="noopener noreferrer"
-               className="group flex flex-col items-center gap-2"
+               className="group flex flex-col items-center gap-3"
              >
-                <span className="text-[9px] font-black uppercase tracking-[5px] text-slate-300 group-hover:text-blue-600 transition-colors">Venture Architecture</span>
-                <div className="flex items-center gap-4 px-6 py-3 bg-white border border-slate-100 rounded-2xl shadow-xl shadow-slate-100/50 hover:border-blue-200 hover:shadow-blue-50 transition-all group-hover:-translate-y-1">
-                   <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-all">
-                      <Globe size={14} />
+                <div className="flex items-center gap-2">
+                   <div className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse shadow-[0_0_8px_rgba(37,99,235,0.8)]"></div>
+                   <span className="text-[10px] font-black uppercase tracking-[5px] text-slate-400 group-hover:text-blue-600 transition-colors">Venture Delivery</span>
+                </div>
+                
+                <div className="flex items-center gap-5 px-8 py-4 bg-slate-900 rounded-[22px] shadow-2xl shadow-blue-200/50 hover:shadow-blue-300/60 transition-all border border-slate-800 hover:border-blue-500/50 relative overflow-hidden group/btn">
+                   <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/10 via-blue-600/10 to-cyan-500/10 opacity-0 group-hover/btn:opacity-100 transition-opacity"></div>
+                   
+                   <div className="relative w-10 h-10 rounded-[14px] bg-gradient-to-br from-indigo-600 to-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-900/40 group-hover/btn:scale-110 transition-transform duration-500">
+                      <Globe size={18} className="animate-[spin_8s_linear_infinite]" />
                    </div>
-                   <div className="flex flex-col">
-                      <span className="text-[10px] font-black uppercase tracking-[3px] text-slate-400 leading-none">Engineered by</span>
-                      <span className="text-xs font-black uppercase tracking-[2px] text-slate-900 mt-1">Paraditi Corp</span>
+                   
+                   <div className="relative flex flex-col items-start">
+                      <span className="text-[9px] font-black uppercase tracking-[4px] text-blue-400/80 leading-none mb-1.5">Architected By</span>
+                      <div className="flex items-center gap-2">
+                         <span className="text-sm font-black uppercase tracking-[3px] text-white">Paraditi</span>
+                         <span className="text-sm font-black uppercase tracking-[3px] bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">Corp</span>
+                      </div>
                    </div>
+
+                   <div className="absolute -bottom-[2px] left-0 right-0 h-[3px] bg-gradient-to-r from-transparent via-blue-500 to-transparent blur-[2px] opacity-0 group-hover/btn:opacity-100 transition-opacity"></div>
                 </div>
              </a>
           </div>

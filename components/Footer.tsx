@@ -122,27 +122,20 @@ const Footer: React.FC = () => {
                rel="noopener noreferrer"
                className="group flex flex-col items-center gap-3"
              >
-                <div className="flex items-center gap-2">
-                   <div className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse shadow-[0_0_8px_rgba(37,99,235,0.8)]"></div>
-                   <span className="text-[10px] font-black uppercase tracking-[5px] text-slate-400 group-hover:text-blue-600 transition-colors">Venture Delivery</span>
-                </div>
+                <span className="text-[10px] font-black uppercase tracking-[5px] text-slate-300 group-hover:text-slate-900 transition-colors">Venture Delivery</span>
                 
-                <div className="flex items-center gap-5 px-8 py-4 bg-slate-900 rounded-[22px] shadow-2xl shadow-blue-200/50 hover:shadow-blue-300/60 transition-all border border-slate-800 hover:border-blue-500/50 relative overflow-hidden group/btn">
-                   <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/10 via-blue-600/10 to-cyan-500/10 opacity-0 group-hover/btn:opacity-100 transition-opacity"></div>
-                   
-                   <div className="relative w-10 h-10 rounded-[14px] bg-gradient-to-br from-indigo-600 to-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-900/40 group-hover/btn:scale-110 transition-transform duration-500">
-                      <Globe size={18} className="animate-[spin_8s_linear_infinite]" />
+                <div className="flex items-center gap-5 px-8 py-4 bg-slate-950 rounded-2xl shadow-2xl shadow-slate-200/50 hover:shadow-slate-300/60 transition-all border border-slate-900 hover:border-slate-800 group/btn">
+                   <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-white group-hover/btn:bg-white group-hover/btn:text-slate-950 transition-all duration-300">
+                      <Globe size={18} />
                    </div>
                    
-                   <div className="relative flex flex-col items-start">
-                      <span className="text-[9px] font-black uppercase tracking-[4px] text-blue-400/80 leading-none mb-1.5">Architected By</span>
-                      <div className="flex items-center gap-2">
+                   <div className="flex flex-col items-start">
+                      <span className="text-[9px] font-black uppercase tracking-[4px] text-slate-500 leading-none mb-1.5">Architected By</span>
+                      <div className="flex items-center gap-1.5">
                          <span className="text-sm font-black uppercase tracking-[3px] text-white">Paraditi</span>
-                         <span className="text-sm font-black uppercase tracking-[3px] bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">Corp</span>
+                         <span className="text-sm font-black uppercase tracking-[3px] text-slate-400">Corp</span>
                       </div>
                    </div>
-
-                   <div className="absolute -bottom-[2px] left-0 right-0 h-[3px] bg-gradient-to-r from-transparent via-blue-500 to-transparent blur-[2px] opacity-0 group-hover/btn:opacity-100 transition-opacity"></div>
                 </div>
              </a>
           </div>

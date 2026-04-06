@@ -134,11 +134,11 @@ const Home: React.FC = () => {
                 className="bg-white rounded-[40px] p-12 border border-slate-100 shadow-xl overflow-hidden relative group h-[550px] flex flex-col justify-end"
               >
                   <div className="absolute inset-0 z-0">
-                      <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=1000" className="w-full h-full object-cover grayscale opacity-10 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-1000 group-hover:scale-110" alt="" />
+                      <img src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=2000" className="w-full h-full object-cover grayscale opacity-20 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-1000 group-hover:scale-110" alt="" />
                       <div className="absolute inset-0 bg-gradient-to-t from-white via-white/80 to-transparent"></div>
                   </div>
                   <div className="relative z-10">
-                    <img src="/natgeo_logo.png" className="h-10 mb-8 rounded-lg" alt="National Geographic Logo" />
+                    <img src="/natgeo_branding.png" className="h-10 mb-8 rounded-lg" alt="National Geographic Logo" />
                     <h3 className="text-4xl font-bold text-slate-900 mb-4">Engineering <br/> for Explorers</h3>
                     <p className="text-slate-600 max-w-sm mb-10 text-base leading-relaxed">The pinnacle of travel engineering. Designed to survive the world's most demanding environments.</p>
                     <a href="#products" className="inline-flex items-center gap-3 bg-slate-900 text-white px-8 py-4 rounded-full font-bold text-sm hover:scale-105 transition-all">

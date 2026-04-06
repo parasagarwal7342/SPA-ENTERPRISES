@@ -138,7 +138,7 @@ const Home: React.FC = () => {
                       <div className="absolute inset-0 bg-gradient-to-t from-white via-white/80 to-transparent"></div>
                   </div>
                   <div className="relative z-10">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/e/e0/National_Geographic_logo.svg" className="h-10 mb-8 opacity-70" alt="NG" />
+                    <img src="/natgeo_logo.png" className="h-10 mb-8 rounded-lg" alt="National Geographic Logo" />
                     <h3 className="text-4xl font-bold text-slate-900 mb-4">Engineering <br/> for Explorers</h3>
                     <p className="text-slate-600 max-w-sm mb-10 text-base leading-relaxed">The pinnacle of travel engineering. Designed to survive the world's most demanding environments.</p>
                     <a href="#products" className="inline-flex items-center gap-3 bg-slate-900 text-white px-8 py-4 rounded-full font-bold text-sm hover:scale-105 transition-all">

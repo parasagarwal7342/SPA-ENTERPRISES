@@ -861,6 +861,7 @@ export const BRAND_DETAILS = {
   [Brand.NationalGeographic]: {
     tagline: 'Further Your Adventure',
     description: 'National Geographic gear is engineered for durability and purpose. Inspired by the explorers who push boundaries.',
+    logo: '/natgeo_logo.png',
     colors: {
       primary: 'bg-[#FFCC00]',
       secondary: 'bg-[#2B2B2B]',
@@ -870,6 +871,7 @@ export const BRAND_DETAILS = {
   [Brand.Shraddha]: {
     tagline: 'Tradition in Every Detail',
     description: 'Shraddha celebrates the timeless beauty of Indian brass craftsmanship. Our pieces are designed for longevity and spiritual resonance.',
+    logo: '/shraddha_logo.png',
     colors: {
       primary: 'bg-[#D4AF37]',
       secondary: 'bg-white',

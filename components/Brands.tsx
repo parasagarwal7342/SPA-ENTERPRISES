@@ -53,11 +53,20 @@ const Brands: React.FC = () => {
             </div>
             <div className="order-1 md:order-2 relative">
               <div className="aspect-square rounded-3xl overflow-hidden shadow-2xl bg-black border border-gray-800 flex items-center justify-center p-8">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-16 border-[8px] border-[#FFCC00] flex-shrink-0"></div>
-                  <div className="flex flex-col">
-                    <span className="text-white text-2xl md:text-3xl font-black leading-none tracking-tighter">NATIONAL</span>
-                    <span className="text-white text-2xl md:text-3xl font-black leading-none tracking-tighter">GEOGRAPHIC</span>
+                <div className="flex flex-col items-center gap-6">
+                  {BRAND_DETAILS[Brand.NationalGeographic].logo && (
+                    <img
+                      src={BRAND_DETAILS[Brand.NationalGeographic].logo}
+                      className="h-24 object-contain mb-2"
+                      alt="National Geographic Logo"
+                    />
+                  )}
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-16 border-[8px] border-[#FFCC00] flex-shrink-0"></div>
+                    <div className="flex flex-col">
+                      <span className="text-white text-2xl md:text-3xl font-black leading-none tracking-tighter">NATIONAL</span>
+                      <span className="text-white text-2xl md:text-3xl font-black leading-none tracking-tighter">GEOGRAPHIC</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -76,7 +85,7 @@ const Brands: React.FC = () => {
             <div className="relative">
               <div className="aspect-square rounded-full overflow-hidden shadow-[0_0_40px_rgba(212,175,55,0.2)] bg-black border-4 border-[#D4AF37]/40 flex items-center justify-center">
                 <img
-                  src="/logo.png"
+                  src={BRAND_DETAILS[Brand.Shraddha].logo}
                   className="w-full h-full object-contain"
                   alt="Shraddha Logo"
                 />

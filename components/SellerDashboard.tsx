@@ -29,6 +29,7 @@ const SellerDashboard: React.FC = () => {
     price: '',
     description: '',
     image: '',
+    images: [],
     features: []
   });
 
@@ -40,7 +41,10 @@ const SellerDashboard: React.FC = () => {
   const handleOpenModal = (product?: Product) => {
     if (product) {
       setEditingProduct(product);
-      setFormData(product);
+      setFormData({
+        ...product,
+        images: product.images || []
+      });
     } else {
       setEditingProduct(null);
       setFormData({
@@ -50,6 +54,7 @@ const SellerDashboard: React.FC = () => {
         price: '',
         description: '',
         image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=1000',
+        images: [],
         features: ['Premium Quality', 'Official Distribution']
       });
     }
@@ -60,6 +65,7 @@ const SellerDashboard: React.FC = () => {
     e.preventDefault();
     const finalProduct = {
       ...formData,
+      images: formData.images?.filter(img => img.trim() !== '') || [],
       id: editingProduct ? editingProduct.id : (Date.now().toString()),
     } as Product;
 
@@ -341,16 +347,52 @@ const SellerDashboard: React.FC = () => {
                          />
                       </div>
                       <div className="flex flex-col gap-3">
-                         <label className="text-[10px] font-black uppercase tracking-[3px] text-slate-400 ml-2">Asset Image Sync URL</label>
+                         <div className="flex justify-between items-center ml-2">
+                           <label className="text-[10px] font-black uppercase tracking-[3px] text-slate-400">Primary Asset URL</label>
+                           <button 
+                             type="button" 
+                             onClick={() => setFormData({...formData, images: [...(formData.images || []), '']})} 
+                             className="text-[10px] font-black uppercase tracking-[2px] text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                           >
+                             <Plus size={12}/> Add Angle
+                           </button>
+                         </div>
                          <input 
                            required 
                            value={formData.image}
                            onChange={(e) => setFormData({...formData, image: e.target.value})}
                            className="w-full bg-slate-50 border border-slate-100 rounded-2xl p-5 text-sm font-bold outline-none focus:bg-white focus:border-blue-600 transition-all shadow-sm" 
-                           placeholder="https://image-source.com/..."
+                           placeholder="https://image-source.com/primary..."
                          />
-                         <div className="mt-4 p-4 bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-between">
-                            <span className="text-[10px] font-black uppercase tracking-[2px] text-slate-400">Node Validation</span>
+                         
+                         {formData.images?.map((img, idx) => (
+                           <div key={idx} className="flex items-center gap-2 mt-1">
+                             <input 
+                               value={img}
+                               onChange={(e) => {
+                                 const newImages = [...(formData.images || [])];
+                                 newImages[idx] = e.target.value;
+                                 setFormData({...formData, images: newImages});
+                               }}
+                               className="flex-grow bg-slate-50 border border-slate-100 rounded-2xl p-4 text-sm font-bold outline-none focus:bg-white focus:border-blue-600 transition-all shadow-sm" 
+                               placeholder={`Additional Angle URL ${idx + 1}`}
+                             />
+                             <button 
+                               type="button"
+                               onClick={() => {
+                                 const newImages = [...(formData.images || [])];
+                                 newImages.splice(idx, 1);
+                                 setFormData({...formData, images: newImages});
+                               }}
+                               className="p-4 bg-white border border-slate-100 text-slate-400 hover:text-red-500 hover:border-red-100 rounded-2xl transition-all shadow-sm"
+                             >
+                               <X size={16} />
+                             </button>
+                           </div>
+                         ))}
+
+                         <div className="mt-2 p-4 bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-between">
+                            <span className="text-[10px] font-black uppercase tracking-[2px] text-slate-400">Node Validation ({(formData.images?.length || 0) + 1} Angles)</span>
                             <Check className="text-green-500" size={16} />
                          </div>
                       </div>

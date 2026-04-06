@@ -103,34 +103,40 @@ const Footer: React.FC = () => {
         </div>
 
         {/* Global Footer Strip */}
-        <div className="pt-12 border-t border-slate-100 flex flex-col lg:flex-row justify-between items-center gap-10">
-          <div className="flex flex-col gap-3">
+        <div className="pt-12 border-t border-slate-100 flex flex-col lg:flex-row justify-between items-center gap-10 lg:gap-0">
+          
+          {/* Copyright & Meta */}
+          <div className="flex flex-col gap-4 flex-1">
              <p className="text-[10px] font-black uppercase tracking-[3px] text-slate-400">© {new Date().getFullYear()} SPA ENTERPRISE CORE DISTRIBUTION. REGISTRY-G-4309.</p>
-             <div className="flex items-center gap-6 text-[9px] font-bold text-slate-900 uppercase tracking-widest">
-                <span className="flex items-center gap-2 px-3 py-1 bg-slate-50 border border-slate-100 rounded-lg"><Shield size={12} className="text-blue-600" /> Authorized Nodes Only</span>
-                <span className="flex items-center gap-2 px-3 py-1 bg-slate-50 border border-slate-100 rounded-lg"><Activity size={12} className="text-green-600" /> Latency: 42ms</span>
+             <div className="flex items-center gap-4 text-[9px] font-bold text-slate-900 uppercase tracking-widest">
+                <span className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 border border-slate-100 rounded-lg"><Shield size={12} className="text-blue-600" /> Authorized Nodes Only</span>
+                <span className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 border border-slate-100 rounded-lg"><Activity size={12} className="text-green-600" /> Latency: 42ms</span>
              </div>
           </div>
 
-          <div className="flex flex-col items-end gap-3 text-right">
-             <p className="text-[10px] font-black uppercase tracking-[3px] text-slate-400">Venture Architecture</p>
+          {/* Central Venture Badge */}
+          <div className="flex-1 flex justify-center order-first lg:order-none">
              <a 
                href="https://parasagarwal7342.netlify.app" 
                target="_blank" 
                rel="noopener noreferrer"
-               className="flex items-center gap-3 px-4 py-2 bg-slate-900 text-white rounded-xl border border-slate-800 hover:bg-slate-800 transition-all shadow-xl shadow-slate-200 group"
+               className="group flex flex-col items-center gap-2"
              >
-                <div className="flex flex-col items-start leading-none">
-                  <span className="text-[8px] font-black text-slate-400 uppercase tracking-[2px]">Engineered & Delivered by</span>
-                  <span className="text-[11px] font-black uppercase tracking-[3px] mt-1 group-hover:text-blue-400 transition-colors">PARADITI CORP</span>
-                </div>
-                <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
-                  <Globe size={14} className="text-blue-400" />
+                <span className="text-[9px] font-black uppercase tracking-[5px] text-slate-300 group-hover:text-blue-600 transition-colors">Venture Architecture</span>
+                <div className="flex items-center gap-4 px-6 py-3 bg-white border border-slate-100 rounded-2xl shadow-xl shadow-slate-100/50 hover:border-blue-200 hover:shadow-blue-50 transition-all group-hover:-translate-y-1">
+                   <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-all">
+                      <Globe size={14} />
+                   </div>
+                   <div className="flex flex-col">
+                      <span className="text-[10px] font-black uppercase tracking-[3px] text-slate-400 leading-none">Engineered by</span>
+                      <span className="text-xs font-black uppercase tracking-[2px] text-slate-900 mt-1">Paraditi Corp</span>
+                   </div>
                 </div>
              </a>
           </div>
 
-          <div className="flex gap-10 text-[10px] font-black uppercase tracking-[5px] text-slate-400 border-l border-slate-100 pl-10 hidden lg:flex">
+          {/* Legal Protocol */}
+          <div className="flex-1 flex justify-end gap-10 text-[10px] font-black uppercase tracking-[5px] text-slate-400 border-l border-slate-100 pl-10 hidden lg:flex">
             <a href="#" className="hover:text-blue-600 transition-colors">Port Privacy</a>
             <a href="#" className="hover:text-blue-600 transition-colors">Protocol Manifest</a>
             <a href="#" className="hover:text-blue-600 transition-colors">Data Nodes</a>

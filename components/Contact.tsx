@@ -1,233 +1,112 @@
-import React, { useState } from 'react';
-import { Mail, Phone, MapPin, Send, Loader2, AlertCircle } from 'lucide-react';
-import { InquiryFormData } from '../types';
-import { z } from 'zod';
-
-const inquirySchema = z.object({
-  name: z.string().min(2, "Name is too short").max(100).regex(/^[a-zA-Z\s.-]+$/, "Invalid characters in name"),
-  email: z.string().email("Invalid email address"),
-  company: z.string().max(100).optional(),
-  phone: z.string().min(10, "Phone number too short").regex(/^\+?[0-9\s-]+$/, "Invalid phone format"),
-  message: z.string().min(10, "Message must be detailed enough (min 10 chars)").max(1000),
-  type: z.enum(['B2B', 'Retail', 'Support']),
-});
+import React from 'react';
+import { motion } from 'framer-motion';
+import { MapPin, Phone, Mail, Globe, Map } from 'lucide-react';
 
 const Contact: React.FC = () => {
-  const [loading, setLoading] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [formData, setFormData] = useState<InquiryFormData>({
-    name: '',
-    email: '',
-    company: '',
-    phone: '',
-    message: '',
-    type: 'B2B'
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Validation
-    try {
-      inquirySchema.parse(formData);
-      setErrors({});
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        const fieldErrors = error.flatten().fieldErrors;
-        const newErrors: Record<string, string> = {};
-        Object.keys(fieldErrors).forEach(key => {
-          // @ts-ignore
-          if (fieldErrors[key] && fieldErrors[key].length > 0) {
-            // @ts-ignore
-            newErrors[key] = fieldErrors[key][0];
-          }
-        });
-        setErrors(newErrors);
-        return;
-      }
-    }
-
-    setLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false);
-      setSubmitted(true);
-      setFormData({ name: '', email: '', company: '', phone: '', message: '', type: 'B2B' });
-    }, 1500);
-  };
-
   return (
-    <div className="min-h-screen bg-gray-50 py-20 font-sans">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Let's Connect</h1>
-          <p className="text-gray-600 max-w-2xl mx-auto text-lg">
-            Whether you're looking for wholesale opportunities, a custom export quote, or product support, we're here to help.
-          </p>
+    <div className="bg-[#f8fafc] py-32 px-10" id="contact">
+      <div className="max-w-[1400px] mx-auto">
+        <div className="flex flex-col items-center text-center mb-20">
+          <span className="inline-block px-4 py-1 bg-blue-50 text-blue-600 rounded-full text-[10px] font-black uppercase tracking-widest mb-6">Global Communications Hub</span>
+          <h2 className="text-4xl font-bold text-slate-900 mb-4">Official Node Interaction</h2>
+          <p className="text-slate-500 font-medium max-w-xl">Reliable service infrastructure through our dual-node distribution network.</p>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-12">
-          {/* Contact Info */}
-          <div className="lg:col-span-1 space-y-8">
-            <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
-              <h3 className="text-2xl font-bold mb-8">Contact Information</h3>
-              <div className="space-y-6">
-                <div className="flex items-start gap-4">
-                  <div className="p-3 bg-amber-50 rounded-xl text-amber-600">
-                    <Phone size={24} />
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Phone</p>
-                    <p className="text-lg font-bold text-gray-900">+91 9650045621</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-4">
-                  <div className="p-3 bg-blue-50 rounded-xl text-blue-600 flex-shrink-0">
-                    <Mail size={24} />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-sm text-gray-500">Email</p>
-                    <p className="text-base md:text-lg font-bold text-gray-900 break-words">
-                      spaenterprisesdelhi@gmail.com
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-4">
-                  <div className="p-3 bg-emerald-50 rounded-xl text-emerald-600 flex-shrink-0">
-                    <MapPin size={24} />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-sm text-gray-500">Headquarters</p>
-                    <p className="text-base md:text-lg font-bold text-gray-900 leading-tight">
-                      C-53/B BLOCK- C RAMA VIHAR,<br />
-                      ROHINI SECTOR-39, DELHI-110081
-                    </p>
-                  </div>
-                </div>
+        <div className="grid lg:grid-cols-3 gap-10">
+          {/* Node 1: Principal Office */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="bg-white rounded-[40px] p-12 border border-slate-100 shadow-xl relative overflow-hidden"
+          >
+            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50/50 rounded-full blur-3xl -z-10"></div>
+            <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-10"><MapPin size={28} /></div>
+            
+            <h3 className="text-2xl font-bold text-slate-900 mb-2">Principal <span className="text-blue-600">Office</span></h3>
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-8 border-b border-slate-50 pb-4">Authorized Registry Node</p>
+            
+            <div className="space-y-6">
+              <div className="flex flex-col gap-2">
+                 <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 leading-none">Global Address</span>
+                 <p className="text-sm font-bold text-slate-900">53-B, Block-C, Gali No. 1, Karala Landmark Near Yuva Shakti, Rama Vihar, Delhi – 110081</p>
               </div>
-
-              <div className="mt-12 pt-8 border-t border-gray-100">
-                <h4 className="font-bold mb-4">Business Hours</h4>
-                <p className="text-gray-600 text-sm">Mon - Fri: 9:00 AM - 6:00 PM IST</p>
-                <p className="text-gray-600 text-sm">Sat: 10:00 AM - 2:00 PM IST</p>
+              <div className="flex flex-col gap-2">
+                 <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 leading-none">Phone Trace</span>
+                 <p className="text-sm font-bold text-slate-900">+91 93122 77087</p>
+              </div>
+              <div className="flex flex-col gap-2">
+                 <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 leading-none">Email Protocol</span>
+                 <p className="text-sm font-bold text-blue-600">spaenterprisesdelhi@gmail.com</p>
               </div>
             </div>
-          </div>
+          </motion.div>
 
-          {/* Form */}
-          <div className="lg:col-span-2">
-            <div className="bg-white p-8 md:p-12 rounded-3xl shadow-sm border border-gray-100">
-              {submitted ? (
-                <div className="text-center py-20">
-                  <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <Send size={40} />
-                  </div>
-                  <h3 className="text-3xl font-bold text-gray-900 mb-4">Message Sent!</h3>
-                  <p className="text-gray-600 mb-8">We have received your inquiry. One of our specialists will contact you within 24 hours.</p>
-                  <button
-                    onClick={() => setSubmitted(false)}
-                    className="text-amber-600 font-bold hover:underline"
-                  >
-                    Send another message
-                  </button>
-                </div>
-              ) : (
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                      <input
-                        required
-                        type="text"
-                        className={`w-full px-4 py-3 bg-gray-50 border ${errors.name ? 'border-red-500' : 'border-gray-200'} rounded-xl focus:ring-2 focus:ring-amber-500 outline-none transition-all`}
-                        placeholder="John Doe"
-                        value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      />
-                      {errors.name && <p className="text-xs text-red-500 mt-1 flex items-center gap-1"><AlertCircle size={10} /> {errors.name}</p>}
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-                      <input
-                        required
-                        type="email"
-                        className={`w-full px-4 py-3 bg-gray-50 border ${errors.email ? 'border-red-500' : 'border-gray-200'} rounded-xl focus:ring-2 focus:ring-amber-500 outline-none transition-all`}
-                        placeholder="john@example.com"
-                        value={formData.email}
-                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      />
-                      {errors.email && <p className="text-xs text-red-500 mt-1 flex items-center gap-1"><AlertCircle size={10} /> {errors.email}</p>}
-                    </div>
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Company / Retailer Name</label>
-                      <input
-                        type="text"
-                        className={`w-full px-4 py-3 bg-gray-50 border ${errors.company ? 'border-red-500' : 'border-gray-200'} rounded-xl focus:ring-2 focus:ring-amber-500 outline-none transition-all`}
-                        placeholder="Enterprise Ltd"
-                        value={formData.company}
-                        onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                      />
-                      {errors.company && <p className="text-xs text-red-500 mt-1 flex items-center gap-1"><AlertCircle size={10} /> {errors.company}</p>}
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-                      <input
-                        type="tel"
-                        className={`w-full px-4 py-3 bg-gray-50 border ${errors.phone ? 'border-red-500' : 'border-gray-200'} rounded-xl focus:ring-2 focus:ring-amber-500 outline-none transition-all`}
-                        placeholder="+91 ..."
-                        value={formData.phone}
-                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      />
-                      {errors.phone && <p className="text-xs text-red-500 mt-1 flex items-center gap-1"><AlertCircle size={10} /> {errors.phone}</p>}
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Inquiry Type</label>
-                    <select
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none transition-all"
-                      value={formData.type}
-                      onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
-                    >
-                      <option value="B2B">B2B / Bulk Ordering</option>
-                      <option value="Retail">Retail Inquiry</option>
-                      <option value="Support">Warranty & Support</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Message</label>
-                    <textarea
-                      required
-                      rows={4}
-                      className={`w-full px-4 py-3 bg-gray-50 border ${errors.message ? 'border-red-500' : 'border-gray-200'} rounded-xl focus:ring-2 focus:ring-amber-500 outline-none transition-all resize-none`}
-                      placeholder="Tell us about your requirements..."
-                      value={formData.message}
-                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                    ></textarea>
-                    {errors.message && <p className="text-xs text-red-500 mt-1 flex items-center gap-1"><AlertCircle size={10} /> {errors.message}</p>}
-                  </div>
-
-                  <button
-                    disabled={loading}
-                    type="submit"
-                    className="w-full bg-gray-900 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-gray-800 transition-all disabled:opacity-70"
-                  >
-                    {loading ? <Loader2 className="animate-spin" size={20} /> : <Send size={20} />}
-                    Submit Inquiry
-                  </button>
-                </form>
-              )}
+          {/* Node 2: Branch Office */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+            className="bg-white rounded-[40px] p-12 border border-slate-100 shadow-xl relative overflow-hidden"
+          >
+            <div className="absolute top-0 right-0 w-32 h-32 bg-green-50/50 rounded-full blur-3xl -z-10"></div>
+            <div className="w-16 h-16 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center mb-10"><Globe size={28} /></div>
+            
+            <h3 className="text-2xl font-bold text-slate-900 mb-2">Branch <span className="text-green-600">Office</span></h3>
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-8 border-b border-slate-50 pb-4">Secondary Distribution Hub</p>
+            
+            <div className="space-y-6">
+              <div className="flex flex-col gap-2">
+                 <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 leading-none">Hub Address</span>
+                 <p className="text-sm font-bold text-slate-900">Upper Ground, 104, Dream Hub Apartment-4 Najafgarh, Shyam Vihar Ph-II, New Delhi – 110043</p>
+              </div>
+              <div className="flex flex-col gap-2">
+                 <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 leading-none">District Control</span>
+                 <p className="text-sm font-bold text-slate-900">North West Delhi, Delhi</p>
+              </div>
+              <div className="flex flex-col gap-2">
+                 <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 leading-none">Business Type</span>
+                 <p className="text-sm font-bold text-slate-900">Micro Manufacturing Facility</p>
+              </div>
             </div>
-          </div>
+          </motion.div>
+
+          {/* Contact Logic / Form Summary */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+            className="bg-slate-900 rounded-[40px] p-12 shadow-2xl relative overflow-hidden text-white"
+          >
+             <div className="absolute inset-0 bg-blue-600/10 pointer-events-none"></div>
+             <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mb-10 border border-white/10"><Map size={28} /></div>
+             <h3 className="text-2xl font-bold mb-8">Interaction Protocol</h3>
+             
+             <div className="space-y-8">
+               <div className="p-4 bg-white/5 rounded-2xl border border-white/5 flex items-center gap-4">
+                  <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.5)]"></div>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Response Latency: &lt;24h</span>
+               </div>
+               
+               <p className="text-slate-400 text-sm font-medium leading-relaxed mb-10">
+                 Our distribution network ensures that all inquiries are routed through our principal office in Karala for quality assurance and official registry.
+               </p>
+
+               <a 
+                 href="mailto:spaenterprisesdelhi@gmail.com" 
+                 className="flex items-center justify-center gap-3 bg-blue-600 text-white w-full py-5 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-xl shadow-blue-900/20"
+               >
+                 Initialize Sync <ArrowRight size={16} />
+               </a>
+             </div>
+          </motion.div>
         </div>
       </div>
     </div>
   );
 };
+import { ArrowRight } from 'lucide-react';
 
 export default Contact;

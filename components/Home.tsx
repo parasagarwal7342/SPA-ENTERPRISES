@@ -3,6 +3,9 @@ import { Compass, ShieldCheck, ArrowUpRight, Zap, Star, Globe, Shield, CreditCar
 import { useProducts } from '../ProductContext';
 import { Brand } from '../types';
 import { motion } from 'framer-motion';
+import About from './About';
+import Leadership from './Leadership';
+import Contact from './Contact';
 
 const Home: React.FC = () => {
   const { products } = useProducts();
@@ -178,7 +181,11 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Top Sellers / Deals for 100k Users Proof UX */}
+       <About />
+       <Leadership />
+       <Contact />
+ 
+       {/* Top Sellers / Deals for 100k Users Proof UX */}
       <section className="py-20 px-10">
          <div className="max-w-[1600px] mx-auto bg-white rounded-[56px] border border-slate-100 p-16 shadow-2xl shadow-slate-200">
             <div className="flex items-center justify-between mb-12">

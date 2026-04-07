@@ -57,22 +57,22 @@ const Footer: React.FC = () => {
               <li className="flex items-center gap-4 group">
                  <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-600 transition-all"><Mail size={18} /></div>
                  <div>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Email Support</p>
-                    <p className="text-xs font-bold text-slate-900 mt-1">spaenterprisesdelhi@gmail.com</p>
+                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Email Support</p>
+                     <p className="text-xs font-bold text-slate-900 mt-1">spaenterprisesdelhi@gmail.com</p>
                  </div>
               </li>
               <li className="flex items-center gap-4 group">
                  <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-600 transition-all"><Phone size={18} /></div>
                  <div>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Secure Line</p>
-                    <p className="text-xs font-bold text-slate-900 mt-1">+91 9650045621</p>
+                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Secure Line</p>
+                     <p className="text-xs font-bold text-slate-900 mt-1">+91 93122 77087</p>
                  </div>
               </li>
               <li className="flex items-center gap-4 group">
                  <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-600 transition-all"><MapPin size={18} /></div>
                  <div>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Global HQ Node</p>
-                    <p className="text-xs font-bold text-slate-900 mt-1">Rohini Sector-39, Delhi-110081</p>
+                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Principal Office</p>
+                     <p className="text-xs font-bold text-slate-900 mt-1">53-B, Block-C, Gali No. 1, Karala Landmark Near Yuva Shakti, Rama Vihar, Delhi – 110081</p>
                  </div>
               </li>
             </ul>
@@ -107,10 +107,10 @@ const Footer: React.FC = () => {
           
           {/* Copyright & Meta */}
           <div className="flex flex-col gap-4 flex-1">
-             <p className="text-[10px] font-black uppercase tracking-[3px] text-slate-400">© {new Date().getFullYear()} SPA ENTERPRISE CORE DISTRIBUTION. REGISTRY-G-4309.</p>
+             <p className="text-[10px] font-black uppercase tracking-[3px] text-slate-400">© {new Date().getFullYear()} M/S SPA ENTERPRISES. UDYAM-DL-06-0094890.</p>
              <div className="flex items-center gap-4 text-[9px] font-bold text-slate-900 uppercase tracking-widest">
-                <span className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 border border-slate-100 rounded-lg"><Shield size={12} className="text-blue-600" /> Authorized Nodes Only</span>
-                <span className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 border border-slate-100 rounded-lg"><Activity size={12} className="text-green-600" /> Latency: 42ms</span>
+                <span className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 border border-slate-100 rounded-lg"><Shield size={12} className="text-blue-600" /> GSTIN: 07AFAFS5850H1ZW</span>
+                <span className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 border border-slate-100 rounded-lg"><Activity size={12} className="text-green-600" /> MSME Certified Micro Enterprise</span>
              </div>
           </div>
 

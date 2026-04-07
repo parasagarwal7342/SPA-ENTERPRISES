@@ -14,9 +14,10 @@ const Navbar: React.FC<NavbarProps> = ({ currentPath }) => {
 
   const navItems = [
     { label: 'Home', href: '#home' },
+    { label: 'About Us', href: '#about' },
+    { label: 'Management', href: '#management' },
     { label: 'Products', href: '#products' },
-    { label: 'Brands', href: '#brands' },
-    { label: 'Support', href: '#support' },
+    { label: 'Contact Us', href: '#contact' },
   ];
 
   return (

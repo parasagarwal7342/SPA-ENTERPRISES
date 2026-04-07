@@ -1,108 +1,103 @@
-
 import React from 'react';
-import { Target, Eye, Globe2, History } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Building2, Calendar, Gem, Info, Award } from 'lucide-react';
 
 const About: React.FC = () => {
   return (
-    <div className="bg-white">
-      {/* Hero */}
-      <section className="py-24 bg-gray-50 border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-3xl">
-            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-8">
-              Decades of Excellence in Distribution.
-            </h1>
-            <p className="text-xl text-gray-600 leading-relaxed">
-              SPA Enterprise stands as a pillar of reliability in the premium product distribution sector. 
-              With a focus on curated brand partnerships, we bring world-class quality to local and global markets.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Stats */}
-      <section className="py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid md:grid-cols-4 gap-8 text-center">
-          <div>
-            <div className="text-4xl font-bold text-amber-500 mb-2">15+</div>
-            <p className="text-gray-600 font-medium">Years Experience</p>
-          </div>
-          <div>
-            <div className="text-4xl font-bold text-amber-500 mb-2">500+</div>
-            <p className="text-gray-600 font-medium">Retail Partners</p>
-          </div>
-          <div>
-            <div className="text-4xl font-bold text-amber-500 mb-2">25k+</div>
-            <p className="text-gray-600 font-medium">Products Shipped</p>
-          </div>
-          <div>
-            <div className="text-4xl font-bold text-amber-500 mb-2">2</div>
-            <p className="text-gray-600 font-medium">Global Regions</p>
-          </div>
-        </div>
-      </section>
-
-      {/* Mission Vision */}
-      <section className="py-20 bg-gray-900 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-2 gap-20">
-            <div>
-              <div className="flex items-center gap-3 mb-6">
-                <Target className="text-amber-500" size={32} />
-                <h2 className="text-3xl font-bold">Our Mission</h2>
+    <div className="bg-white py-32 px-10" id="about">
+      <div className="max-w-[1400px] mx-auto">
+        <div className="grid lg:grid-cols-2 gap-24 items-center">
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+          >
+            <div className="flex items-center gap-3 mb-8">
+              <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
+                <Building2 size={24} />
               </div>
-              <p className="text-gray-400 text-lg leading-relaxed">
-                To bridge the gap between world-renowned brands and discerning consumers by providing efficient distribution, authentic products, and unparalleled B2B support. We aim to elevate the standard of travel gear and traditional jewelry across the globe.
+              <span className="text-sm font-black uppercase tracking-[3px] text-blue-600">Company Profile</span>
+            </div>
+            
+            <h2 className="text-5xl font-black text-slate-900 leading-tight mb-10">
+              M/S SPA <br/> <span className="text-blue-600">Enterprises</span>
+            </h2>
+            
+            <div className="space-y-8 text-slate-500 leading-[1.8] text-lg font-medium mb-12">
+              <p>
+                SPA Enterprises is a certified <span className="text-slate-900 font-bold">Micro Enterprise</span> specializing in the 
+                manufacturing and trading of high-quality goods. Since our incorporation in <span className="text-slate-900 font-bold">May 2023</span>, 
+                we have established ourselves as a reliable partner in the retail sale of non-specialized goods across India.
+              </p>
+              <p>
+                Our core strength lies in our ability to source and distribute premium asset classes, 
+                blending traditional artisanal craftsmanship with modern engineering excellence.
               </p>
             </div>
-            <div>
-              <div className="flex items-center gap-3 mb-6">
-                <Eye className="text-amber-500" size={32} />
-                <h2 className="text-3xl font-bold">Our Vision</h2>
-              </div>
-              <p className="text-gray-400 text-lg leading-relaxed">
-                To be the primary destination for explorers and jewelry enthusiasts who value quality, heritage, and durability. We envision a future where SPA Enterprise is synonymous with trust and premium lifestyle solutions.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
 
-      {/* Timeline/History */}
-      <section className="py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold mb-4">Our Journey</h2>
-            <p className="text-gray-600">The milestones that shaped SPA Enterprise.</p>
-          </div>
-          
-          <div className="space-y-12">
-            <div className="flex flex-col md:flex-row gap-8 items-center">
-              <div className="md:w-1/2">
-                <img src="https://picsum.photos/id/1/800/400" className="rounded-2xl shadow-lg" alt="History" />
+            <div className="grid grid-cols-2 gap-8">
+              <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 group hover:border-blue-200 transition-all">
+                <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center text-blue-600 mb-4 group-hover:scale-110 transition-transform">
+                  <Calendar size={20} />
+                </div>
+                <h4 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-1">Incorporated</h4>
+                <p className="text-slate-900 font-bold">30 May 2023</p>
               </div>
-              <div className="md:w-1/2">
-                <h3 className="text-2xl font-bold mb-4">The Foundation (2010)</h3>
-                <p className="text-gray-600 leading-relaxed">
-                  Founded with a vision to provide authentic brass jewelry to local markets. Starting with a small team of artisans and a passion for traditional Indian craftsmanship.
-                </p>
+              <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 group hover:border-blue-200 transition-all">
+                <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center text-blue-600 mb-4 group-hover:scale-110 transition-transform">
+                  <Award size={20} />
+                </div>
+                <h4 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-1">MSME Type</h4>
+                <p className="text-slate-900 font-bold">Micro (2023-24)</p>
               </div>
             </div>
+          </motion.div>
 
-            <div className="flex flex-col md:flex-row-reverse gap-8 items-center">
-              <div className="md:w-1/2">
-                <img src="https://picsum.photos/id/2/800/400" className="rounded-2xl shadow-lg" alt="Expansion" />
-              </div>
-              <div className="md:w-1/2">
-                <h3 className="text-2xl font-bold mb-4">The National Geographic Partnership (2018)</h3>
-                <p className="text-gray-600 leading-relaxed">
-                  Secured official distribution rights for National Geographic Luggage. This expanded our portfolio into high-performance travel gear and attracted global B2B partners.
-                </p>
-              </div>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="relative"
+          >
+            <div className="absolute -inset-4 bg-blue-50/50 rounded-[40px] blur-3xl -z-10"></div>
+            <div className="bg-slate-950 rounded-[48px] p-12 text-white shadow-2xl relative overflow-hidden">
+               <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/20 rounded-full blur-[80px] -z-10"></div>
+               
+               <h3 className="text-2xl font-bold mb-12 flex items-center gap-3">
+                 <span className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white"><Info size={18} /></span> 
+                 Business Registry Trace
+               </h3>
+
+               <div className="space-y-10">
+                 {[
+                   { label: 'Udyam Registration', value: 'UDYAM-DL-06-0094890' },
+                   { label: 'GSTIN Protocol', value: '07AFAFS5850H1ZW' },
+                   { label: 'Legal Constitution', value: 'Partnership' },
+                   { label: 'NIC Industry Code', value: '47190 (Retail Sale)' },
+                   { label: 'Activity Domain', value: 'Manufacturing & Trading' },
+                 ].map((detail, i) => (
+                   <div key={i} className="flex flex-col gap-2 group cursor-default">
+                      <span className="text-[10px] font-black uppercase tracking-[4px] text-slate-500 group-hover:text-blue-400 transition-colors">{detail.label}</span>
+                      <span className="text-xl font-bold tracking-tight text-white">{detail.value}</span>
+                   </div>
+                 ))}
+               </div>
+
+               <div className="mt-16 pt-10 border-t border-slate-900 flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full border border-slate-800 flex items-center justify-center">
+                    <Gem size={20} className="text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Enterprise Status</p>
+                    <p className="text-sm font-bold text-green-500">Regular / Ongoing Activity</p>
+                  </div>
+               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
-      </section>
+      </div>
     </div>
   );
 };

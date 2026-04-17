@@ -8,7 +8,7 @@ const AIAdvisor: React.FC = () => {
   const { products } = useProducts();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<{ role: 'user' | 'bot'; text: string }[]>([
-    { role: 'bot', text: 'Welcome! I am Aditi AI, your professional SPA Enterprise concierge. How can I assist you with our authorized collections today?' }
+    { role: 'bot', text: 'Welcome! I am Shraddha AI, your professional SPA Enterprise concierge. How can I assist you with our authorized collections today?' }
   ]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -51,7 +51,7 @@ const AIAdvisor: React.FC = () => {
         model: 'gemini-3-flash-preview',
         contents: userMessage,
         config: {
-          systemInstruction: `You are Aditi AI, the professional digital concierge for SPA Enterprise. 
+          systemInstruction: `You are Shraddha AI, the professional digital concierge for SPA Enterprise. 
           CURRENT AUTHORIZED INVENTORY: ${inventoryContext}.
           Location: Rohini Sector-39, Delhi.
           Direct Distributor for National Geographic and Shraddha.
@@ -114,7 +114,7 @@ const AIAdvisor: React.FC = () => {
                      <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-green-500 rounded-full border-4 border-white shadow-sm"></span>
                   </div>
                   <div>
-                     <h4 className="font-bold text-sm text-slate-930 tracking-tight">Aditi AI Assistant</h4>
+                     <h4 className="font-bold text-sm text-slate-930 tracking-tight">Shraddha AI Assistant</h4>
                      <div className="flex items-center gap-2 mt-1">
                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none flex items-center gap-1.5"><Globe size={10} /> Syncing Delhi HQ</span>
                      </div>

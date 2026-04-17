@@ -163,7 +163,7 @@ const Products: React.FC = () => {
               </div>
            </div>
 
-           {/* Professional Insight Box (Replacing Aditi AI's neon box) */}
+           {/* Professional Insight Box (Replacing Shraddha AI's neon box) */}
            <div className="p-8 rounded-[40px] bg-slate-900 text-white shadow-2xl relative overflow-hidden group">
               <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-blue-400 mb-6">
                  <ShieldCheck size={20} />

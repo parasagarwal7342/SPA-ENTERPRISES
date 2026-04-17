@@ -130,9 +130,9 @@ const Footer: React.FC = () => {
                    </div>
                    
                    <div className="flex flex-col items-start">
-                      <span className="text-[9px] font-black uppercase tracking-[4px] text-slate-500 leading-none mb-1.5">Architected By</span>
+                      <span className="text-[7.5px] font-black uppercase tracking-[2px] text-slate-500 leading-tight mb-1.5">Built & Maintained for SPA Enterprises by</span>
                       <div className="flex items-center gap-1.5">
-                         <span className="text-sm font-black uppercase tracking-[3px] text-white">Paraditi</span>
+                         <span className="text-sm font-black uppercase tracking-[3px] text-white">Paravion</span>
                          <span className="text-sm font-black uppercase tracking-[3px] text-slate-400">Corp</span>
                       </div>
                    </div>

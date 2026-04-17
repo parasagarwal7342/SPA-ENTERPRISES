@@ -133,7 +133,7 @@ const Footer: React.FC = () => {
                       <span className="text-[7.5px] font-black uppercase tracking-[2px] text-slate-500 leading-tight mb-1.5">Built & Maintained for SPA Enterprises by</span>
                       <div className="flex items-center gap-1.5">
                          <span className="text-sm font-black uppercase tracking-[3px] text-white">Paravion</span>
-                         <span className="text-sm font-black uppercase tracking-[3px] text-slate-400">Corp</span>
+                         <span className="text-sm font-black uppercase tracking-[3px] text-slate-400">Tech</span>
                       </div>
                    </div>
                 </div>

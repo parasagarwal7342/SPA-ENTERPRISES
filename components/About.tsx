@@ -27,7 +27,7 @@ const About: React.FC = () => {
             <div className="space-y-8 text-slate-500 leading-[1.8] text-lg font-medium mb-12">
               <p>
                 SPA Enterprises is a certified <span className="text-slate-900 font-bold">Micro Enterprise</span> specializing in the 
-                manufacturing and trading of high-quality goods. Since our incorporation in <span className="text-slate-900 font-bold">May 2023</span>, 
+                manufacturing and trading of high-quality goods. Since our intechoration in <span className="text-slate-900 font-bold">May 2023</span>, 
                 we have established ourselves as a reliable partner in the retail sale of non-specialized goods across India.
               </p>
               <p>
@@ -41,7 +41,7 @@ const About: React.FC = () => {
                 <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center text-blue-600 mb-4 group-hover:scale-110 transition-transform">
                   <Calendar size={20} />
                 </div>
-                <h4 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-1">Incorporated</h4>
+                <h4 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-1">Intechorated</h4>
                 <p className="text-slate-900 font-bold">30 May 2023</p>
               </div>
               <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 group hover:border-blue-200 transition-all">

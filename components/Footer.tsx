@@ -117,7 +117,7 @@ const Footer: React.FC = () => {
           {/* Central Venture Badge */}
           <div className="flex-1 flex justify-center order-first lg:order-none">
              <a 
-               href="https://parasagarwal7342.netlify.app" 
+               href="https://portfolio-a6ccb.web.app/" 
                target="_blank" 
                rel="noopener noreferrer"
                className="group flex flex-col items-center gap-3"

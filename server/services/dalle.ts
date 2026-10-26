@@ -17,7 +17,7 @@ export const generateImage = async (prompt: string): Promise<string | null> => {
             size: "1024x1024",
         });
 
-        return response.data[0].url || null;
+        return response.data?.[0]?.url || null;
     } catch (error) {
         console.error("DALL-E error:", error);
         return null;

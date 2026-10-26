@@ -39,15 +39,18 @@ Return ONLY a structured JSON object with NO markdown wrapping. The JSON must ha
 - imagePrompt (string, visual prompt for DALL-E)
 `;
 
-    const response = await anthropic.messages.create({
-        model: 'claude-3-5-sonnet-20240620',
-        max_tokens: 1024,
-        temperature: 0.7,
+    const response = await anthropic.beta.messages.create({
+        model: process.env.ANTHROPIC_MODEL || 'claude-opus-5-5',
+        max_tokens: 16000,
+        betas: ['server-side-fallback-2026-07-01'],
+        fallbacks: 'default',
+        output_config: { effort: 'low' },
         system: "You are a professional social media content creator. Generate engaging, platform-optimized content. Return structured JSON response only — no markdown, no extra text.",
         messages: [{ role: 'user', content: prompt }]
     });
 
-    const val = (response.content[0] as any).text;
+    if (response.stop_reason === 'refusal') throw new Error('The AI declined to generate this post. Try rephrasing the topic.');
+    const val = response.content.flatMap((b) => (b.type === 'text' ? [b.text] : [])).join('').trim();
     try {
         const parsed = JSON.parse(val);
         return {

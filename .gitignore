@@ -10,3 +10,5 @@ uploads/
 .DS_Store
 *.log
 .vite/
+server/data/
+data/

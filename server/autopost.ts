@@ -1,5 +1,7 @@
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { db } from './sqlite.js';
+import { requireStaff } from './auth.js';
+import { DATA_DIR } from './db.js';
 import { generateContent } from './services/claude.js';
 import { generateImage } from './services/dalle.js';
 import { postToInstagram } from './services/instagram.js';
@@ -16,30 +18,23 @@ const pump = promisify(pipeline);
 export const autoPostPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     console.log('[SPA ENTERPRISE] AutoPost Plugin Node Initializing...');
 
+    // Staff-only: requires a signed-in seller/owner account.
+    fastify.addHook('preHandler', requireStaff);
+
     fastify.post('/api/autopost/upload', async (request, reply) => {
         const data = await request.file();
         if (!data) throw new Error("No file uploaded");
         
-        const uploadsDir = path.join(process.cwd(), 'uploads');
-        if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir);
-        
-        const filePath = path.join(uploadsDir, data.filename);
+        const uploadsDir = path.join(DATA_DIR, 'uploads');
+        fs.mkdirSync(uploadsDir, { recursive: true });
+
+        // Never trust the client's filename: strip any directory parts.
+        const filePath = path.join(uploadsDir, `${Date.now()}-${path.basename(data.filename).replace(/[^\w.-]/g, '_')}`);
         await pump(data.file, fs.createWriteStream(filePath));
         
         return { filePath };
     });
 
-    // Simple Password Protection Middleware
-    fastify.addHook('onRequest', async (request, reply) => {
-        // Only protect /api/autopost routes
-        if (!request.url.startsWith('/api/autopost')) return;
-        
-        const pwd = request.headers['x-app-password'];
-        const envPwd = process.env.APP_PASSWORD || 'mypassword123';
-        if (pwd !== envPwd) {
-            reply.status(401).send({ error: "Unauthorized access to MyAutoPost Node. Password required." });
-        }
-    });
 
     fastify.post('/api/autopost/generate', async (request, reply) => {
         const { topic, brand, tone, audience, platforms, generateImage: genImg } = request.body as any;

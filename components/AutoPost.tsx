@@ -1,45 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Bot, Image as ImageIcon, Video, Calendar, Clock, Lock, CheckCircle2, XCircle, Share2, Facebook, Instagram, Linkedin, Youtube, Loader2, Sparkles, Send } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { api } from '../lib/api';
 
 export const AutoPostHub: React.FC = () => {
-    const [password, setPassword] = useState(localStorage.getItem('app_password') || '');
-    const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('app_password'));
+    // Access is controlled by the staff sign-in; the server rejects anyone else.
     const [activeTab, setActiveTab] = useState<'create' | 'history' | 'schedule'>('create');
-
-    const handleLogin = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (password) {
-            localStorage.setItem('app_password', password);
-            setIsAuthenticated(true);
-        }
-    };
-
-    if (!isAuthenticated) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-[60vh] bg-slate-930 text-white rounded-[48px] p-12 border border-slate-800 relative overflow-hidden group">
-               <div className="absolute inset-0 bg-blue-600/5 transition-opacity group-hover:bg-blue-600/10"></div>
-               <Lock size={64} className="text-blue-500 mb-8 relative z-10" />
-               <h2 className="text-4xl font-black mb-4 tracking-tighter relative z-10">Restricted Access</h2>
-               <p className="text-sm font-bold text-slate-400 uppercase tracking-[4px] mb-12 relative z-10">SPA Enterprise AutoPost Hub</p>
-               
-               <form onSubmit={handleLogin} className="w-full max-w-sm relative z-10">
-                   <div className="bg-slate-900 rounded-3xl p-2 pl-6 flex items-center border border-slate-800 shadow-2xl shadow-blue-900/20 focus-within:border-blue-500/50 transition-all">
-                       <input 
-                           type="password"
-                           value={password}
-                           onChange={e => setPassword(e.target.value)}
-                           placeholder="Enter Access Sequence..."
-                           className="bg-transparent border-none text-white w-full text-sm font-bold tracking-widest outline-none placeholder:text-slate-600 uppercase"
-                       />
-                       <button type="submit" className="bg-blue-600 text-white w-14 h-14 rounded-2xl flex items-center justify-center hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/30">
-                           <KeyIcon />
-                       </button>
-                   </div>
-               </form>
-            </div>
-        );
-    }
 
     return (
         <div className="p-10 bg-white border border-slate-200 rounded-[48px] shadow-2xl shadow-slate-200/50 min-h-[80vh]">
@@ -48,7 +14,7 @@ export const AutoPostHub: React.FC = () => {
                   <Share2 size={28} />
                </div>
                <div>
-                  <h2 className="text-3xl font-black text-slate-930 tracking-tight">Social Matrix Center</h2>
+                  <h2 className="text-3xl font-black text-slate-900 tracking-tight">Social Matrix Center</h2>
                   <p className="text-[10px] items-center font-bold text-blue-600 uppercase tracking-[4px] mt-2 flex gap-2">
                      <Sparkles size={12} /> AI Content Engine Active
                   </p>
@@ -67,15 +33,15 @@ export const AutoPostHub: React.FC = () => {
             </div>
 
             <div className="relative">
-                {activeTab === 'create' && <CreatePost password={password} />}
-                {activeTab === 'history' && <PostHistory password={password} />}
-                {activeTab === 'schedule' && <PostSchedule password={password} />}
+                {activeTab === 'create' && <CreatePost />}
+                {activeTab === 'history' && <PostHistory />}
+                {activeTab === 'schedule' && <PostSchedule />}
             </div>
         </div>
     );
 };
 
-const CreatePost: React.FC<{ password: string }> = ({ password }) => {
+const CreatePost: React.FC = () => {
     const [topic, setTopic] = useState('');
     const [brand, setBrand] = useState('SPA Enterprise');
     const [tone, setTone] = useState('Professional');
@@ -87,14 +53,7 @@ const CreatePost: React.FC<{ password: string }> = ({ password }) => {
     const handleGenerate = async () => {
         setStatus('generating');
         try {
-            const API_BASE_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
-            const res = await fetch(`${API_BASE_URL}/api/autopost/generate`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'x-app-password': password },
-                body: JSON.stringify({ topic, brand, tone, platforms, generateImage: genImage, audience: 'General Audience' })
-            });
-            if (!res.ok) throw new Error("Auth Failed or API Error");
-            const data = await res.json();
+            const data = await api('/autopost/generate', { body: { topic, brand, tone, platforms, generateImage: genImage, audience: 'General Audience' } });
             setAiResult(data);
             setStatus('review');
         } catch (e: any) {
@@ -106,19 +65,9 @@ const CreatePost: React.FC<{ password: string }> = ({ password }) => {
     const handlePost = async () => {
         setStatus('posting');
         try {
-            const API_BASE_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
-            const res = await fetch(`${API_BASE_URL}/api/autopost/post`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'x-app-password': password },
-                body: JSON.stringify({
-                    platforms,
-                    caption: JSON.stringify(aiResult.captions),
-                    hashtags: aiResult.hashtags,
-                    imageUrl: aiResult.imageUrl,
-                    scheduleTime: null
-                })
-            });
-            if (!res.ok) throw new Error("Post Submission Failed");
+            // The server sends one caption to every selected platform; use the first platform's (edited) caption.
+            const caption = aiResult.captions[platforms[0]] || Object.values(aiResult.captions).find(Boolean) || '';
+            await api('/autopost/post', { body: { platforms, caption, hashtags: aiResult.hashtags, imageUrl: aiResult.imageUrl, scheduleTime: null } });
             setStatus('done');
         } catch (e) {
             alert('Posting Failed');
@@ -147,7 +96,8 @@ const CreatePost: React.FC<{ password: string }> = ({ password }) => {
                             <p className="text-[10px] font-black uppercase tracking-[3px] text-blue-600 mb-4">{p}</p>
                             <textarea 
                                 className="w-full bg-white border border-slate-200 rounded-2xl p-4 text-sm font-medium outline-none resize-none h-32 focus:border-blue-500 shadow-sm"
-                                defaultValue={aiResult.captions[p]}
+                                value={aiResult.captions[p] ?? ''}
+                                onChange={(e) => setAiResult({ ...aiResult, captions: { ...aiResult.captions, [p]: e.target.value } })}
                             />
                         </div>
                     ))}
@@ -244,7 +194,7 @@ const CreatePost: React.FC<{ password: string }> = ({ password }) => {
                 </div>
             </div>
 
-            <div className="flex items-center justify-between bg-slate-930 text-white p-10 rounded-[40px] shadow-2xl relative overflow-hidden">
+            <div className="flex items-center justify-between bg-slate-900 text-white p-10 rounded-[40px] shadow-2xl relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600 blur-[120px] opacity-20 transform translate-x-1/2 -translate-y-1/2 pointer-events-none" />
                 <div>
                    <h4 className="text-xl font-black tracking-tight mb-2 flex items-center gap-3"><ImageIcon className="text-blue-500" /> Synthesize Visual Media</h4>
@@ -265,14 +215,12 @@ const CreatePost: React.FC<{ password: string }> = ({ password }) => {
     );
 };
 
-const PostHistory: React.FC<{ password: string }> = ({ password }) => {
+const PostHistory: React.FC = () => {
     const [history, setHistory] = useState<any[]>([]);
 
     const fetchHistory = () => {
-        const API_BASE_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
-        fetch(`${API_BASE_URL}/api/autopost/history`, { headers: { 'x-app-password': password } })
-            .then(r => r.json())
-            .then(data => Array.isArray(data) ? setHistory(data) : setHistory([]))
+        api('/autopost/history')
+            .then((data: any) => data => Array.isArray(data) ? setHistory(data) : setHistory([]))
             .catch(() => setHistory([]));
     };
 
@@ -303,14 +251,12 @@ const PostHistory: React.FC<{ password: string }> = ({ password }) => {
     );
 };
 
-const PostSchedule: React.FC<{ password: string }> = ({ password }) => {
+const PostSchedule: React.FC = () => {
     const [scheduled, setScheduled] = useState<any[]>([]);
 
     const fetchSchedule = () => {
-        const API_BASE_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
-        fetch(`${API_BASE_URL}/api/autopost/scheduled`, { headers: { 'x-app-password': password } })
-            .then(r => r.json())
-            .then(data => Array.isArray(data) ? setScheduled(data) : setScheduled([]))
+        api('/autopost/scheduled')
+            .then((data: any) => data => Array.isArray(data) ? setScheduled(data) : setScheduled([]))
             .catch(() => setScheduled([]));
     };
 
@@ -319,11 +265,7 @@ const PostSchedule: React.FC<{ password: string }> = ({ password }) => {
     }, []);
 
     const cancelPost = async (id: number) => {
-        const API_BASE_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
-        await fetch(`${API_BASE_URL}/api/autopost/scheduled/${id}`, { 
-            method: 'DELETE',
-            headers: { 'x-app-password': password } 
-        });
+        await api(`/autopost/scheduled/${id}`, { method: 'DELETE' }).catch(() => {});
         fetchSchedule();
     };
 
@@ -357,9 +299,3 @@ const PostSchedule: React.FC<{ password: string }> = ({ password }) => {
         </div>
     );
 };
-
-const KeyIcon = () => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="square">
-        <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" />
-    </svg>
-);

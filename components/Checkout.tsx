@@ -1,322 +1,290 @@
-import React, { useState } from 'react';
-import { useProducts } from '../ProductContext';
+import React, { useEffect, useState } from 'react';
+import { Minus, Plus, Trash2, ShieldCheck, CheckCircle2, ShoppingBag, CreditCard, Banknote, MessageCircle, Tag } from 'lucide-react';
+import { useCart } from '../CartContext';
 import { useAuth } from '../AuthContext';
-import { ShoppingCart, ShieldCheck, CreditCard, ChevronRight, CheckCircle2, ArrowLeft, Zap, ArrowRight, Package, Loader2 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useProducts } from '../ProductContext';
+import { api, ApiError } from '../lib/api';
+import { Link, useDocumentMeta } from '../lib/router';
+import { inr, titleCase, whatsappLink } from '../lib/format';
+import { ErrorNote, Field, Spinner } from './ui';
+import type { Order, ShippingRegion } from '../types';
 
-// Declare Razorpay on window for TypeScript
 declare global {
-  interface Window { Razorpay: any; }
+  interface Window { Razorpay?: new (options: Record<string, unknown>) => { open: () => void } }
 }
 
+interface Quote { subtotal: number; discount: number; couponCode: string | null; shippingFee: number; total: number }
+
+const loadRazorpay = () => new Promise<void>((resolve, reject) => {
+  if (window.Razorpay) return resolve();
+  const s = document.createElement('script');
+  s.src = 'https://checkout.razorpay.com/v1/checkout.js';
+  s.onload = () => resolve();
+  s.onerror = () => reject(new Error('Could not load the payment window. Check your connection and try again.'));
+  document.body.appendChild(s);
+});
+
+const FORM_KEY = 'spa_checkout_details';
+
 const Checkout: React.FC = () => {
-    const { cartItems, clearCart } = useProducts();
-    const { isAuthenticated, login, user } = useAuth();
-    const [step, setStep] = useState<'cart' | 'auth' | 'payment' | 'success'>('cart');
-    const [isProcessing, setIsProcessing] = useState(false);
-    const [form, setForm] = useState({ name: '', email: '', address: '' });
-    const [authForm, setAuthForm] = useState({ email: '', password: '', isRegister: true });
-    const [paymentId, setPaymentId] = useState('');
-    const [shippingRegion, setShippingRegion] = useState<'delhi' | 'india' | 'global'>('india');
+  useDocumentMeta('Cart & Checkout');
+  const { rows, lines, setQuantity, remove, clear, subtotal } = useCart();
+  const { user } = useAuth();
+  const { config, loading: catalogLoading, refreshCatalog } = useProducts();
 
-    const subTotalAmount = cartItems.reduce((acc, p) => acc + parseInt(p.price?.replace(/[₹,]/g, '') || '0'), 0);
-    const shippingFee = shippingRegion === 'delhi' ? 0 : shippingRegion === 'global' ? 2500 : subTotalAmount >= 4999 ? 0 : 500;
-    const totalAmount = subTotalAmount + shippingFee;
+  const [form, setForm] = useState(() => {
+    try { return { name: '', email: '', phone: '', address: '', city: '', pincode: '', ...JSON.parse(localStorage.getItem(FORM_KEY) || '{}') }; }
+    catch { return { name: '', email: '', phone: '', address: '', city: '', pincode: '' }; }
+  });
+  const [region, setRegion] = useState<ShippingRegion>('india');
+  const [couponInput, setCouponInput] = useState('');
+  const [coupon, setCoupon] = useState<string | null>(null);
+  const [quote, setQuote] = useState<Quote | null>(null);
+  const [quoteError, setQuoteError] = useState<string | null>(null);
+  const [payment, setPayment] = useState<'razorpay' | 'cod'>('razorpay');
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [placed, setPlaced] = useState<Order | null>(null);
 
-    const handleRazorpayPayment = async () => {
-        if (!form.name || !form.email || !form.address) {
-            alert('Please fill all required fields before proceeding.');
-            return;
-        }
-        setIsProcessing(true);
+  useEffect(() => {
+    if (user) setForm((f: typeof form) => ({ ...f, name: f.name || user.name, email: f.email || user.email, phone: f.phone || user.phone || '' }));
+  }, [user]);
 
-        try {
-            // Step 1: Create order on backend
-            const API_BASE_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
-            const res = await fetch(`${API_BASE_URL}/api/payment/create-order`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ amount: totalAmount, currency: 'INR', receipt: `ord_${Date.now()}` })
-            });
-            const order = await res.json();
+  useEffect(() => {
+    if (!config.paymentMethods.includes(payment) && config.paymentMethods.length) setPayment(config.paymentMethods[0]);
+  }, [config.paymentMethods, payment]);
 
-            // Step 2: If mock order, skip to success (no API key set)
-            if (order.mock) {
-                console.log('[Razorpay] Mock mode - skipping payment widget.');
-                setPaymentId('MOCK_' + Date.now());
-                clearCart();
-                setStep('success');
-                setIsProcessing(false);
-                return;
-            }
+  useEffect(() => {
+    if (region === 'global' && payment === 'cod' && config.paymentMethods.includes('razorpay')) setPayment('razorpay');
+  }, [region, payment, config.paymentMethods]);
 
-            // Step 3: Load Razorpay checkout widget
-            const RAZORPAY_KEY = import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_placeholder';
-            const options = {
-                key: RAZORPAY_KEY,
-                amount: order.amount,
-                currency: order.currency,
-                name: 'SPA Enterprise',
-                description: `Order from SPA Enterprise — ${cartItems.length} item(s)`,
-                image: 'https://upload.wikimedia.org/wikipedia/commons/e/e0/National_Geographic_logo.svg',
-                order_id: order.id,
-                prefill: { name: form.name, email: form.email },
-                theme: { color: '#2563EB' },
-                handler: async (response: any) => {
-                    // Step 4: Verify payment signature on backend
-                    const API_BASE_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
-                    const verifyRes = await fetch(`${API_BASE_URL}/api/payment/verify`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(response)
-                    });
-                    const result = await verifyRes.json();
-                    if (result.verified) {
-                        setPaymentId(result.payment_id);
-                        clearCart();
-                        setStep('success');
-                    } else {
-                        alert('Payment verification failed. Contact support.');
-                    }
-                    setIsProcessing(false);
-                },
-                modal: {
-                    ondismiss: () => setIsProcessing(false)
-                }
-            };
-            const rzp = new window.Razorpay(options);
-            rzp.open();
-        } catch (err) {
-            console.error('Payment error:', err);
-            alert('Payment initialization failed. Please try again.');
-            setIsProcessing(false);
-        }
-    };
+  // Server-side price check whenever the cart, region or coupon changes.
+  const cartKey = JSON.stringify(lines);
+  useEffect(() => {
+    if (!lines.length) { setQuote(null); return; }
+    const t = setTimeout(() => {
+      api<Quote>('/orders/quote', { body: { items: lines, shippingRegion: region, couponCode: coupon } })
+        .then((q) => { setQuote(q); setQuoteError(null); })
+        .catch((e: ApiError) => {
+          setQuoteError(e.message);
+          if (coupon && /coupon/i.test(e.message)) setCoupon(null);
+        });
+    }, 250);
+    return () => clearTimeout(t);
+  }, [cartKey, region, coupon]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const update = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setForm({ ...form, [k]: e.target.value });
+
+  const finish = (order: Order) => {
+    setPlaced(order);
+    clear();
+    refreshCatalog();
+    window.scrollTo(0, 0);
+  };
+
+  const placeOrder = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setSubmitting(true);
+    try { localStorage.setItem(FORM_KEY, JSON.stringify(form)); } catch { /* ignore */ }
+    try {
+      const res = await api<{ order: Order; razorpay?: { keyId: string; orderId: string; amount: number; currency: string } }>('/orders', {
+        body: { items: lines, shippingRegion: region, couponCode: coupon, paymentMethod: payment, customer: form },
+      });
+      if (!res.razorpay) {
+        finish(res.order);
+        return;
+      }
+      await loadRazorpay();
+      const { order, razorpay } = res;
+      const rzp = new window.Razorpay!({
+        key: razorpay.keyId,
+        amount: razorpay.amount,
+        currency: razorpay.currency,
+        order_id: razorpay.orderId,
+        name: 'SPA Enterprise',
+        description: `Order ${order.orderNumber}`,
+        image: `${window.location.origin}/logo.png`,
+        prefill: { name: form.name, email: form.email, contact: form.phone },
+        notes: { order_number: order.orderNumber },
+        theme: { color: '#2563EB' },
+        handler: async (response: Record<string, string>) => {
+          try {
+            const verified = await api<{ order: Order }>(`/orders/${order.orderNumber}/verify-payment`, { body: response });
+            finish(verified.order);
+          } catch (err) {
+            setError(`${(err as Error).message} Your order number is ${order.orderNumber}.`);
+          } finally {
+            setSubmitting(false);
+          }
+        },
+        modal: {
+          ondismiss: () => {
+            setSubmitting(false);
+            setError('Payment was not completed. You can try again or choose Cash on Delivery.');
+            api(`/orders/${order.orderNumber}/abandon`, { body: { razorpayOrderId: razorpay.orderId } }).catch(() => {});
+          },
+        },
+      });
+      rzp.open();
+    } catch (err) {
+      setError((err as Error).message);
+      setSubmitting(false);
+    }
+  };
+
+  if (placed) {
+    const msg = `Hi SPA Enterprise, I just placed order ${placed.orderNumber} for ${inr(placed.total)}.`;
     return (
-        <div className="min-h-screen bg-[#f8fafc] text-slate-900 pt-32 pb-20 px-10">
-            {/* Inject Razorpay SDK */}
-            <script src="https://checkout.razorpay.com/v1/checkout.js" async />
-
-            <div className="max-w-6xl mx-auto">
-
-                {/* Header with Steps */}
-                <div className="flex items-center justify-between mb-16 border-b border-slate-100 pb-10">
-                   <div>
-                      <h1 className="text-4xl font-bold tracking-tight text-slate-930 mb-2">Checkout Protocol</h1>
-                      <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[4px]">Verified Distribution Node DELHI-01</p>
-                   </div>
-                   <div className="flex items-center gap-4">
-                      {[
-                        { id: 'cart', label: 'Registry' },
-                        { id: 'auth', label: 'Client Identity' },
-                        { id: 'payment', label: 'Verification' },
-                        { id: 'success', label: 'Complete' }
-                      ].map((s, i) => (
-                        <div key={s.id} className={`flex items-center gap-3 ${step === s.id ? 'text-blue-600' : 'text-slate-300'}`}>
-                           <div className={`w-8 h-8 rounded-full flex items-center justify-center font-black text-xs border-2 ${step === s.id ? 'border-blue-600 bg-blue-50' : 'border-slate-100'}`}>{i+1}</div>
-                           <span className="text-[10px] font-black uppercase tracking-widest hidden sm:block">{s.label}</span>
-                           {i < 3 && <ChevronRight size={14} className="text-slate-200" />}
-                        </div>
-                      ))}
-                   </div>
-                </div>
-
-                <AnimatePresence mode="wait">
-                    {/* STEP 1: CART */}
-                    {step === 'cart' && (
-                        <motion.div key="cart" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -30 }} className="grid lg:grid-cols-3 gap-12">
-                            <div className="lg:col-span-2 space-y-8">
-                               {cartItems.map((item) => (
-                                 <div key={item.id} className="p-8 bg-white border border-slate-100 rounded-[40px] shadow-xl shadow-slate-200/40 flex items-center justify-between relative overflow-hidden group">
-                                    <div className="flex items-center gap-8">
-                                       <div className="w-24 h-24 bg-slate-50 rounded-3xl p-4 border border-slate-100"><img src={item.image} className="w-full h-full object-contain mix-blend-multiply" alt="" /></div>
-                                       <div>
-                                          <p className="text-[10px] text-blue-600 font-black uppercase tracking-widest mb-1">{item.brand}</p>
-                                          <h4 className="text-xl font-bold text-slate-900">{item.name}</h4>
-                                          <p className="text-sm font-bold text-slate-400 mt-2 uppercase tracking-wide">ID: SPA-{item.id}</p>
-                                       </div>
-                                    </div>
-                                    <div className="text-right">
-                                       <p className="text-2xl font-black text-slate-930 tracking-tight">{item.price}</p>
-                                       <p className="text-[10px] text-green-600 font-black uppercase tracking-widest mt-2">In Stock</p>
-                                    </div>
-                                 </div>
-                               ))}
-                               {cartItems.length === 0 && <div className="text-center py-20 text-slate-300 text-lg font-bold">Your cart is empty</div>}
-                            </div>
-
-                            <div className="bg-white p-12 rounded-[56px] border border-slate-200 shadow-2xl shadow-slate-200/50 flex flex-col h-fit sticky top-40">
-                                <h3 className="text-2xl font-bold text-slate-930 mb-8 border-b border-slate-50 pb-6 uppercase tracking-tight">Order Summary</h3>
-                                <div className="space-y-6 flex-grow">
-                                    <div className="flex justify-between text-sm font-bold text-slate-400 uppercase tracking-widest"><span>Subtotal</span> <span>₹{subTotalAmount.toLocaleString()}</span></div>
-                                    <div className="flex justify-between text-sm font-bold text-slate-400 uppercase tracking-widest">
-                                       <span>Shipping</span> 
-                                       <span className={shippingFee === 0 ? "text-green-600" : "text-blue-600"}>
-                                          {shippingFee === 0 ? 'FREE' : `+₹${shippingFee.toLocaleString()}`}
-                                       </span>
-                                    </div>
-                                    <div className="flex justify-between text-sm font-bold text-slate-400 uppercase tracking-widest"><span>GST</span> <span>Included</span></div>
-                                </div>
-                                <div className="mt-12 pt-8 border-t border-slate-100 flex justify-between items-baseline mb-12">
-                                    <span className="text-xs font-black uppercase tracking-[4px] text-slate-400">Total</span>
-                                    <span className="text-5xl font-black text-slate-930 tracking-tighter">₹{totalAmount.toLocaleString()}</span>
-                                </div>
-                                <button
-                                   onClick={() => {
-                                       if(isAuthenticated) {
-                                           setForm({...form, name: user?.name || '', email: user?.email || ''});
-                                           setStep('payment');
-                                       } else {
-                                           setStep('auth');
-                                       }
-                                   }}
-                                   disabled={cartItems.length === 0}
-                                   className="w-full bg-slate-900 text-white py-6 rounded-3xl font-black text-xs uppercase tracking-[5px] hover:bg-slate-800 transition-all shadow-2xl shadow-slate-200 flex items-center justify-center gap-4 group disabled:opacity-40"
-                                >
-                                    Proceed to Payment <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
-                                </button>
-                                <div className="mt-8 flex items-center justify-center gap-3">
-                                   <ShieldCheck size={18} className="text-blue-600" />
-                                   <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest">Secured by Razorpay</p>
-                                </div>
-                            </div>
-                        </motion.div>
-                    )}
-
-                    {/* STEP 1.5: CLIENT AUTHENTICATION */}
-                    {step === 'auth' && (
-                        <motion.div key="auth" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="max-w-xl mx-auto">
-                            <div className="bg-white p-12 rounded-[48px] border border-slate-200 shadow-2xl relative overflow-hidden">
-                                <h3 className="text-3xl font-black text-slate-930 mb-2 tracking-tight">{authForm.isRegister ? 'Create Client Account' : 'Client Sign-In'}</h3>
-                                <p className="text-slate-400 text-[10px] font-bold uppercase tracking-[3px] mb-10">Mandatory for SPA Protocol Orders</p>
-                                
-                                <div className="space-y-6">
-                                    <div className="flex flex-col gap-3">
-                                        <label className="text-[10px] font-black tracking-[4px] uppercase text-slate-400 ml-4">Consensus Email *</label>
-                                        <input type="email" value={authForm.email} onChange={e => setAuthForm({...authForm, email: e.target.value})} className="w-full bg-slate-50 border border-slate-100 rounded-2xl p-5 text-sm font-bold outline-none focus:bg-white focus:border-blue-600 transition-all" placeholder="client@enterprise.com" />
-                                    </div>
-                                    <div className="flex flex-col gap-3">
-                                        <label className="text-[10px] font-black tracking-[4px] uppercase text-slate-400 ml-4">Security Key *</label>
-                                        <input type="password" value={authForm.password} onChange={e => setAuthForm({...authForm, password: e.target.value})} className="w-full bg-slate-50 border border-slate-100 rounded-2xl p-5 text-sm font-bold outline-none focus:bg-white focus:border-blue-600 transition-all" placeholder="••••••••" />
-                                    </div>
-                                </div>
-
-                                <button
-                                    onClick={async () => {
-                                        if(!authForm.email || !authForm.password) return alert('Enter credentials');
-                                        await login(authForm.email, authForm.password, 'customer');
-                                        setForm({...form, name: 'Valued Customer', email: authForm.email});
-                                        setStep('payment');
-                                    }}
-                                    className="w-full mt-10 px-12 py-6 bg-blue-600 text-white rounded-3xl font-black text-xs uppercase tracking-[5px] hover:bg-blue-700 shadow-xl shadow-blue-500/20 transition-all"
-                                >
-                                    {authForm.isRegister ? 'Register & Continue' : 'Authenticate & Continue'}
-                                </button>
-
-                                <button onClick={() => setAuthForm({...authForm, isRegister: !authForm.isRegister})} className="w-full mt-6 text-[10px] font-black tracking-[2px] uppercase text-slate-400 hover:text-blue-600 transition-colors">
-                                    {authForm.isRegister ? 'Already registered? Sign In' : 'Need an account? Register'}
-                                </button>
-                            </div>
-                            <button onClick={() => setStep('cart')} className="mt-8 mx-auto text-[10px] font-black uppercase tracking-[4px] text-slate-400 hover:text-slate-600 transition-colors flex items-center gap-3">
-                               <ArrowLeft size={16} /> Back to Registry
-                            </button>
-                        </motion.div>
-                    )}
-
-                    {/* STEP 2: DETAILS + PAYMENT */}
-                    {step === 'payment' && (
-                        <motion.div key="payment" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }} className="max-w-4xl mx-auto">
-                            <div className="bg-white p-16 rounded-[64px] border border-slate-200 shadow-2xl relative overflow-hidden">
-                                <div className="relative z-10">
-                                   <h3 className="text-3xl font-black text-slate-930 mb-4 tracking-tight">Your Details</h3>
-                                   <p className="text-slate-400 text-sm font-bold uppercase tracking-[3px] mb-12">Required for delivery</p>
-
-                                   <div className="grid md:grid-cols-2 gap-10">
-                                      <div className="space-y-6">
-                                          <div className="flex flex-col gap-3">
-                                             <label className="text-[10px] font-black tracking-[4px] uppercase text-slate-400 ml-4">Full Name *</label>
-                                             <input value={form.name} onChange={e => setForm({...form, name: e.target.value})} className="w-full bg-slate-50 border border-slate-100 rounded-2xl p-5 text-sm font-bold outline-none focus:bg-white focus:border-blue-600 transition-all" placeholder="e.g. Paras Sharma" />
-                                          </div>
-                                          <div className="flex flex-col gap-3">
-                                             <label className="text-[10px] font-black tracking-[4px] uppercase text-slate-400 ml-4">Email Address *</label>
-                                             <input type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} className="w-full bg-slate-50 border border-slate-100 rounded-2xl p-5 text-sm font-bold outline-none focus:bg-white focus:border-blue-600 transition-all" placeholder="your@email.com" />
-                                          </div>
-                                       </div>
-                                       <div className="flex flex-col gap-6">
-                                          <div className="flex flex-col gap-3">
-                                             <label className="text-[10px] font-black tracking-[4px] uppercase text-slate-400 ml-4">Delivery Node *</label>
-                                             <select value={shippingRegion} onChange={(e: any) => setShippingRegion(e.target.value)} className="w-full bg-slate-50 border border-slate-100 rounded-2xl p-5 text-sm font-bold outline-none focus:bg-white focus:border-blue-600 transition-all appearance-none cursor-pointer">
-                                                <option value="delhi">Delhi / NCR (Zero-Cost)</option>
-                                                <option value="india">India (Complimentary above ₹4,999)</option>
-                                                <option value="global">Global Verified Routing (Fixed Cost)</option>
-                                             </select>
-                                          </div>
-                                          <div className="flex flex-col gap-3 flex-grow">
-                                             <label className="text-[10px] font-black tracking-[4px] uppercase text-slate-400 ml-4">Delivery Address *</label>
-                                             <textarea value={form.address} onChange={e => setForm({...form, address: e.target.value})} className="w-full bg-slate-50 border border-slate-100 rounded-[24px] p-5 text-sm font-bold outline-none focus:bg-white focus:border-blue-600 transition-all resize-none flex-grow" placeholder="Full delivery address with PIN code..." />
-                                          </div>
-                                       </div>
-                                   </div>
-
-                                   <div className="mt-14 bg-slate-900 rounded-[48px] p-10 text-white flex flex-col md:flex-row items-center justify-between gap-10">
-                                      <div>
-                                         <p className="text-[10px] font-black uppercase tracking-[3px] text-blue-400 mb-2">Total Payable</p>
-                                         <h4 className="text-5xl font-black">₹{totalAmount.toLocaleString()}</h4>
-                                         <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-2">All taxes included</p>
-                                      </div>
-                                      <button
-                                         onClick={handleRazorpayPayment}
-                                         disabled={isProcessing}
-                                         className="px-12 py-6 bg-blue-600 text-white rounded-3xl font-black text-xs uppercase tracking-[5px] hover:bg-blue-700 shadow-2xl shadow-blue-500/20 transition-all flex items-center gap-4 disabled:opacity-60"
-                                      >
-                                         {isProcessing ? (
-                                             <><Loader2 size={20} className="animate-spin" /> Processing...</>
-                                         ) : (
-                                             <><CreditCard size={20} /> Pay with Razorpay</>
-                                         )}
-                                      </button>
-                                   </div>
-
-                                   <div className="mt-8 flex items-center justify-center gap-6">
-                                      {['UPI', 'Cards', 'Net Banking', 'Wallets', 'EMI'].map(m => (
-                                          <span key={m} className="text-[9px] bg-slate-50 border border-slate-100 px-3 py-2 rounded-xl font-black uppercase tracking-wider text-slate-400">{m}</span>
-                                      ))}
-                                   </div>
-                                </div>
-                            </div>
-                            <button onClick={() => setStep('cart')} className="mt-12 text-xs font-black uppercase tracking-[4px] text-slate-400 hover:text-blue-600 transition-colors flex items-center gap-3">
-                               <ArrowLeft size={18} /> Back to Cart
-                            </button>
-                        </motion.div>
-                    )}
-
-                    {/* STEP 3: SUCCESS */}
-                    {step === 'success' && (
-                        <motion.div key="success" initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="max-w-2xl mx-auto text-center py-20">
-                            <div className="w-40 h-40 bg-green-50 text-green-500 rounded-[64px] flex items-center justify-center mx-auto mb-16 shadow-2xl shadow-green-100 relative overflow-hidden">
-                               <CheckCircle2 size={70} className="relative z-10" />
-                               <div className="absolute inset-0 bg-green-100/50 animate-ping"></div>
-                            </div>
-                            <h1 className="text-5xl font-black text-slate-900 tracking-tight mb-4">Order Confirmed!</h1>
-                            {paymentId && <p className="text-sm text-slate-400 font-bold uppercase tracking-widest mb-4">Payment ID: {paymentId}</p>}
-                            <p className="text-lg text-slate-500 font-medium leading-relaxed mb-16 max-w-md mx-auto">
-                                Your order has been placed successfully. You'll receive a confirmation email shortly from our Delhi distribution hub.
-                            </p>
-                            <div className="flex flex-col sm:flex-row gap-6 justify-center">
-                               <button onClick={() => window.location.hash = '#products'} className="px-10 py-5 bg-slate-900 text-white rounded-3xl font-black text-xs uppercase tracking-[4px] hover:bg-slate-800 transition-all shadow-xl shadow-slate-200">
-                                   Continue Shopping
-                               </button>
-                               <button onClick={() => window.location.hash = '#home'} className="px-10 py-5 bg-white border border-slate-200 text-slate-600 font-bold text-xs uppercase tracking-[4px] hover:bg-slate-50 transition-all flex items-center justify-center gap-3">
-                                   <Package size={20} /> Back to Home
-                               </button>
-                            </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+      <div className="max-w-2xl mx-auto px-4 pt-28 pb-20 text-center">
+        <div className="w-20 h-20 bg-green-50 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6"><CheckCircle2 size={44} /></div>
+        <h1 className="text-3xl font-bold text-slate-900 mb-2">Thank you, {placed.customer.name.split(' ')[0]}!</h1>
+        <p className="text-slate-600 mb-1">Your order <span className="font-bold text-slate-900">{placed.orderNumber}</span> has been placed.</p>
+        <p className="text-sm text-slate-500 mb-8">
+          {placed.paymentMethod === 'cod'
+            ? `Please keep ${inr(placed.total)} ready for Cash on Delivery. We'll call you on ${placed.customer.phone} to confirm.`
+            : `Payment of ${inr(placed.total)} received. We'll keep you updated on ${placed.customer.phone}.`}
+        </p>
+        <div className="card p-5 text-left mb-8">
+          {placed.items.map((i) => (
+            <div key={i.productId} className="flex justify-between gap-4 text-sm py-1.5">
+              <span className="text-slate-700">{titleCase(i.name)} × {i.quantity}</span>
+              <span className="font-semibold">{inr(i.unitPrice * i.quantity)}</span>
             </div>
+          ))}
+          <div className="flex justify-between border-t border-slate-100 mt-3 pt-3 font-bold"><span>Total</span><span>{inr(placed.total)}</span></div>
         </div>
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <Link to={`/track?order=${placed.orderNumber}`} className="btn-dark">Track this order</Link>
+          <a href={whatsappLink(msg, config.whatsappNumber)} target="_blank" rel="noopener noreferrer" className="btn-outline text-green-700"><MessageCircle size={18} /> Confirm on WhatsApp</a>
+          <Link to="/products" className="btn-outline">Continue shopping</Link>
+        </div>
+      </div>
     );
+  }
+
+  if (catalogLoading) return <div className="pt-40 flex justify-center"><Spinner /></div>;
+
+  if (!rows.length) {
+    return (
+      <div className="max-w-xl mx-auto px-4 pt-32 pb-20 text-center">
+        <ShoppingBag size={48} className="mx-auto text-slate-300 mb-4" />
+        <h1 className="text-2xl font-bold text-slate-900 mb-2">Your cart is empty</h1>
+        <p className="text-slate-500 mb-8">Explore original National Geographic bags and Shraddha jewellery.</p>
+        <Link to="/products" className="btn-primary">Start shopping</Link>
+      </div>
+    );
+  }
+
+  const rules = config.shipping;
+  const india = rules.india;
+  const toFree = region === 'india' && india.freeAbove > 0 ? india.freeAbove - subtotal : 0;
+  const codAllowed = config.paymentMethods.includes('cod') && region !== 'global';
+  const noPayment = !config.paymentMethods.includes('razorpay') && !codAllowed;
+
+  return (
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-24 lg:pt-28 pb-20">
+      <h1 className="text-2xl md:text-3xl font-bold text-slate-900 mb-6">Checkout</h1>
+      <form onSubmit={placeOrder} className="grid lg:grid-cols-[1fr_380px] gap-6 lg:gap-8 items-start">
+        <div className="space-y-6">
+          <section className="card divide-y divide-slate-100">
+            {rows.map(({ product, quantity }) => (
+              <div key={product.id} className="flex gap-4 p-4">
+                <Link to={`/products/${encodeURIComponent(product.id)}`} className="w-20 h-20 flex-shrink-0 bg-slate-50 rounded-xl p-2">
+                  <img src={product.image} alt="" className="w-full h-full object-contain mix-blend-multiply" />
+                </Link>
+                <div className="flex-grow min-w-0">
+                  <p className="text-[11px] font-semibold text-blue-600 uppercase">{product.brand}</p>
+                  <p className="text-sm font-semibold text-slate-800 line-clamp-2">{titleCase(product.name)}</p>
+                  <div className="flex items-center justify-between mt-2 gap-3">
+                    <div className="flex items-center border border-slate-200 rounded-lg">
+                      <button type="button" onClick={() => setQuantity(product.id, quantity - 1)} className="p-1.5 text-slate-500" aria-label="Decrease"><Minus size={14} /></button>
+                      <span className="w-8 text-center text-sm font-semibold">{quantity}</span>
+                      <button type="button" onClick={() => setQuantity(product.id, Math.min(quantity + 1, product.stock ?? 500))} className="p-1.5 text-slate-500" aria-label="Increase"><Plus size={14} /></button>
+                    </div>
+                    <span className="font-bold text-slate-900">{inr(product.price * quantity)}</span>
+                    <button type="button" onClick={() => remove(product.id)} className="p-1.5 text-slate-400 hover:text-red-600" aria-label="Remove"><Trash2 size={16} /></button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </section>
+
+          <section className="card p-5 sm:p-6">
+            <h2 className="font-semibold text-slate-900 mb-4">Delivery details</h2>
+            {!user && <p className="text-sm text-slate-500 mb-4">No account needed. <Link to="/login?next=/cart" className="text-blue-600 font-semibold">Sign in</Link> to save your orders.</p>}
+            <div className="grid sm:grid-cols-2 gap-4">
+              <Field label="Full name"><input required minLength={2} value={form.name} onChange={update('name')} className="input" autoComplete="name" /></Field>
+              <Field label="Mobile number"><input required type="tel" value={form.phone} onChange={update('phone')} className="input" autoComplete="tel" placeholder="98XXXXXXXX" pattern="[+0-9][0-9 \-]{7,15}" /></Field>
+              <Field label="Email" className="sm:col-span-2"><input required type="email" value={form.email} onChange={update('email')} className="input" autoComplete="email" /></Field>
+              <Field label="Address (house no., street, area)" className="sm:col-span-2"><textarea required minLength={8} rows={2} value={form.address} onChange={update('address')} className="input resize-none" autoComplete="street-address" /></Field>
+              <Field label="City"><input required value={form.city} onChange={update('city')} className="input" autoComplete="address-level2" /></Field>
+              <Field label="PIN code"><input required value={form.pincode} onChange={update('pincode')} className="input" autoComplete="postal-code" inputMode="numeric" /></Field>
+              <Field label="Delivery area" className="sm:col-span-2">
+                <select value={region} onChange={(e) => setRegion(e.target.value as ShippingRegion)} className="input">
+                  <option value="delhi">{rules.delhi.label} – {rules.delhi.fee ? inr(rules.delhi.fee) : 'free delivery'}</option>
+                  <option value="india">{india.label} – {inr(india.fee)}{india.freeAbove ? `, free above ${inr(india.freeAbove)}` : ''}</option>
+                  <option value="global">{rules.global.label} – {inr(rules.global.fee)}</option>
+                </select>
+              </Field>
+            </div>
+          </section>
+
+          <section className="card p-5 sm:p-6">
+            <h2 className="font-semibold text-slate-900 mb-4">Payment</h2>
+            {noPayment ? (
+              <ErrorNote>Online ordering is paused right now. Please WhatsApp us at +{config.whatsappNumber} to order.</ErrorNote>
+            ) : (
+              <div className="grid sm:grid-cols-2 gap-3">
+                {config.paymentMethods.includes('razorpay') && (
+                  <label className={`flex items-start gap-3 p-4 rounded-xl border cursor-pointer ${payment === 'razorpay' ? 'border-blue-600 bg-blue-50/50' : 'border-slate-200'}`}>
+                    <input type="radio" name="payment" checked={payment === 'razorpay'} onChange={() => setPayment('razorpay')} className="mt-1" />
+                    <span><span className="flex items-center gap-2 font-semibold text-sm"><CreditCard size={16} /> Pay online</span><span className="text-xs text-slate-500">UPI, cards, net banking, wallets</span></span>
+                  </label>
+                )}
+                {config.paymentMethods.includes('cod') && (
+                  <label className={`flex items-start gap-3 p-4 rounded-xl border ${!codAllowed ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'} ${payment === 'cod' ? 'border-blue-600 bg-blue-50/50' : 'border-slate-200'}`}>
+                    <input type="radio" name="payment" disabled={!codAllowed} checked={payment === 'cod'} onChange={() => setPayment('cod')} className="mt-1" />
+                    <span><span className="flex items-center gap-2 font-semibold text-sm"><Banknote size={16} /> Cash on Delivery</span><span className="text-xs text-slate-500">{codAllowed ? 'Pay when your order arrives' : 'Available within India only'}</span></span>
+                  </label>
+                )}
+              </div>
+            )}
+          </section>
+        </div>
+
+        <aside className="card p-5 sm:p-6 lg:sticky lg:top-28 space-y-4">
+          <h2 className="font-semibold text-slate-900">Order summary</h2>
+          {toFree > 0 && (
+            <p className="text-xs bg-blue-50 text-blue-800 rounded-lg px-3 py-2">Add {inr(toFree)} more for free delivery.</p>
+          )}
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between"><span className="text-slate-500">Subtotal</span><span>{inr(quote?.subtotal ?? subtotal)}</span></div>
+            {!!quote?.discount && <div className="flex justify-between text-green-700"><span>Coupon {quote.couponCode}</span><span>−{inr(quote.discount)}</span></div>}
+            <div className="flex justify-between"><span className="text-slate-500">Delivery</span><span>{quote ? (quote.shippingFee ? inr(quote.shippingFee) : 'Free') : '…'}</span></div>
+          </div>
+          <div className="flex gap-2">
+            <div className="relative flex-grow">
+              <Tag size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input value={couponInput} onChange={(e) => setCouponInput(e.target.value.toUpperCase())} placeholder="Coupon code" className="input pl-8 py-2.5" aria-label="Coupon code" />
+            </div>
+            <button type="button" onClick={() => setCoupon(couponInput.trim() || null)} className="btn-outline px-4 py-2.5">Apply</button>
+          </div>
+          <ErrorNote>{quoteError}</ErrorNote>
+          <div className="flex justify-between items-baseline border-t border-slate-100 pt-4">
+            <span className="font-semibold">Total</span>
+            <span className="text-2xl font-bold">{quote ? inr(quote.total) : '…'}</span>
+          </div>
+          <p className="text-[11px] text-slate-500 -mt-2">Inclusive of GST</p>
+          <ErrorNote>{error}</ErrorNote>
+          <button type="submit" disabled={submitting || !quote || !!quoteError || noPayment} className="btn-primary w-full py-4 text-base">
+            {submitting ? <Spinner size={18} className="text-white" /> : payment === 'cod' ? 'Place order' : `Pay ${quote ? inr(quote.total) : ''}`}
+          </button>
+          <p className="flex items-center justify-center gap-2 text-xs text-slate-500"><ShieldCheck size={14} className="text-green-600" /> Secure checkout{config.paymentMethods.includes('razorpay') ? ' by Razorpay' : ''}</p>
+        </aside>
+      </form>
+    </div>
+  );
 };
 
 export default Checkout;

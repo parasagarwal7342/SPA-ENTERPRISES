@@ -4,7 +4,7 @@ import { Building2, Calendar, Gem, Info, Award } from 'lucide-react';
 
 const About: React.FC = () => {
   return (
-    <div className="bg-white py-32 px-10" id="about">
+    <div className="bg-white py-32 px-10" id="about" style={{ scrollMarginTop: 80 }}>
       <div className="max-w-[1400px] mx-auto">
         <div className="grid lg:grid-cols-2 gap-24 items-center">
           <motion.div

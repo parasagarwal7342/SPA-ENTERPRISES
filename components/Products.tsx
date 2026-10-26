@@ -1,265 +1,193 @@
-import React, { useState, useMemo } from 'react';
+import React, { useMemo } from 'react';
+import { Search, ShoppingCart, SlidersHorizontal, Check, X } from 'lucide-react';
 import { useProducts } from '../ProductContext';
-import { Brand, Product } from '../types';
-import { Filter, Search, ShoppingCart, Star, ShieldCheck, X, ArrowUpRight, Zap, Layers, Cpu, CheckCircle2, ChevronRight, Package, CreditCard } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useCart } from '../CartContext';
+import { Link, navigate, useDocumentMeta, useLocation } from '../lib/router';
+import { inr, percentOff, titleCase } from '../lib/format';
+import { Spinner } from './ui';
+import type { Product } from '../types';
 
-const Products: React.FC = () => {
-  const { products, brandFilter, setBrandFilter, addToCart } = useProducts();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [activeImage, setActiveImage] = useState<string | null>(null);
+const SORTS = [
+  { id: 'featured', label: 'Featured' },
+  { id: 'price-asc', label: 'Price: low to high' },
+  { id: 'price-desc', label: 'Price: high to low' },
+  { id: 'discount', label: 'Biggest discount' },
+] as const;
 
-  const filteredProducts = useMemo(() => products.filter(p => {
-    const matchesBrand = brandFilter === 'All' || p.brand === brandFilter;
-    const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.category.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesBrand && matchesSearch;
-  }), [products, brandFilter, searchQuery]);
+export const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
+  const { add, lines } = useCart();
+  const off = percentOff(product.price, product.mrp);
+  const out = product.stock === 0;
+  const inCart = lines.some((l) => l.productId === product.id);
+  const href = `/products/${encodeURIComponent(product.id)}`;
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] text-slate-900 pb-32 pt-28">
-      
-      {/* Immersive Professional Product Detail Overlay */}
-      <AnimatePresence>
-        {selectedProduct && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-6"
-          >
-            <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setSelectedProduct(null)}></div>
-            <motion.div 
-              initial={{ scale: 0.95, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.95, y: 20 }}
-              className="relative w-full max-w-6xl bg-white rounded-[40px] overflow-hidden flex flex-col lg:grid lg:grid-cols-2 border border-slate-200 shadow-2xl"
-            >
-              <button onClick={() => setSelectedProduct(null)} className="absolute top-8 right-8 p-3 bg-slate-50 hover:bg-slate-100 rounded-full z-10 transition-colors border border-slate-200 text-slate-400 hover:text-slate-900">
-                <X size={24} />
-              </button>
-
-              <div className="bg-slate-50 flex items-center justify-center p-12 relative min-h-[500px]">
-                 <div className="absolute left-8 top-1/2 -translate-y-1/2 flex flex-col gap-3">
-                    {[selectedProduct.image, ...(selectedProduct.images || [])].map((img, i) => (
-                       <button 
-                         key={i} 
-                         onClick={() => setActiveImage(img)}
-                         className={`w-16 h-16 rounded-2xl border-2 overflow-hidden transition-all p-1 bg-white ${activeImage === img || (!activeImage && i === 0) ? 'border-blue-600 shadow-lg shadow-blue-50' : 'border-slate-100 opacity-60 hover:opacity-100'}`}
-                       >
-                         <img src={img} className="w-full h-full object-contain" alt="" />
-                       </button>
-                    ))}
-                 </div>
-                 <motion.img 
-                   key={activeImage || selectedProduct.image}
-                   initial={{ opacity: 0, scale: 0.9 }}
-                   animate={{ opacity: 1, scale: 1 }}
-                   src={activeImage || selectedProduct.image} 
-                   className="w-full max-h-[600px] object-contain drop-shadow-xl" 
-                 />
-              </div>
-
-              <div className="p-12 lg:p-16 flex flex-col h-full overflow-y-auto max-h-[90vh]">
-                 <div className="mb-10">
-                    <div className="flex items-center gap-3 mb-6">
-                        <span className="text-blue-600 text-[10px] font-black uppercase tracking-[4px] px-3 py-1 bg-blue-50 border border-blue-100 rounded-full">{selectedProduct.brand}</span>
-                        <div className="flex text-amber-500 scale-75">
-                          {[1,2,3,4,5].map(i => <Star key={i} size={14} fill="currentColor" />)}
-                        </div>
-                    </div>
-                    <h2 className="text-4xl font-bold text-slate-900 leading-[1.1] mb-6">{selectedProduct.name}</h2>
-                    <div className="flex items-baseline gap-4 mb-8">
-                       <span className="text-5xl font-black text-slate-930 tracking-tighter">{selectedProduct.price}</span>
-                       <span className="text-slate-400 text-xs font-bold uppercase tracking-widest">Distributed from Delhi</span>
-                    </div>
-                 </div>
-
-                 <div className="space-y-10 flex-grow">
-                    <div>
-                       <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[4px] mb-4 flex items-center gap-2">
-                           <Layers size={14} /> Product Profile
-                       </h4>
-                       <p className="text-slate-600 text-[15px] leading-relaxed bg-slate-50 p-6 rounded-3xl border border-slate-100">
-                          {selectedProduct.description}
-                       </p>
-                    </div>
-
-                    <div>
-                       <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[4px] mb-4 flex items-center gap-2">
-                           <ShieldCheck size={14} /> Official Specifications
-                       </h4>
-                       <div className="grid grid-cols-1 gap-3">
-                          {selectedProduct.features.slice(0, 3).map((f, i) => (
-                             <div key={i} className="flex items-center gap-4 text-xs font-bold text-slate-700 bg-white px-5 py-4 rounded-2xl border border-slate-100 shadow-sm">
-                                <CheckCircle2 size={18} className="text-blue-600" /> {f}
-                             </div>
-                          ))}
-                       </div>
-                    </div>
-                 </div>
-
-                 <div className="mt-12 grid grid-cols-2 gap-5 pt-10 border-t border-slate-100">
-                    <button 
-                       onClick={() => { addToCart(selectedProduct); setSelectedProduct(null); }}
-                       className="bg-blue-600 py-5 rounded-2xl text-xs text-white font-black tracking-[4px] uppercase flex items-center justify-center gap-3 hover:bg-blue-700 transition-all shadow-xl shadow-blue-100"
-                    >
-                       <ShoppingCart size={20} /> Add to Cart
-                    </button>
-                    <button className="py-5 rounded-2xl border-2 border-slate-900 bg-slate-900 text-white font-black text-xs tracking-[4px] uppercase hover:bg-slate-800 transition-all shadow-xl shadow-slate-100">
-                       Buy Now
-                    </button>
-                 </div>
-              </div>
-            </motion.div>
-          </motion.div>
+    <article className="group card overflow-hidden flex flex-col hover:shadow-xl hover:shadow-slate-200/60 hover:border-blue-200 transition">
+      <Link to={href} className="relative block aspect-square bg-slate-50 p-4">
+        <img src={product.image} alt={product.name} loading="lazy" className="w-full h-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-500" />
+        {off > 0 && <span className="absolute top-3 left-3 bg-green-600 text-white text-[11px] font-bold px-2 py-1 rounded-md">{off}% OFF</span>}
+        {out && <span className="absolute inset-0 bg-white/60 flex items-center justify-center text-sm font-semibold text-slate-700">Out of stock</span>}
+        {!out && product.stock !== null && product.stock <= 5 && (
+          <span className="absolute top-3 right-3 bg-amber-100 text-amber-800 text-[11px] font-semibold px-2 py-1 rounded-md">Only {product.stock} left</span>
         )}
-      </AnimatePresence>
+      </Link>
+      <div className="p-4 flex flex-col flex-grow">
+        <p className="text-[11px] font-semibold text-blue-600 uppercase tracking-wide mb-1">{product.brand}</p>
+        <Link to={href} className="text-sm font-semibold text-slate-800 line-clamp-2 min-h-[2.5rem] hover:text-blue-600">{titleCase(product.name)}</Link>
+        <div className="mt-3 flex items-end justify-between gap-2">
+          <div>
+            <span className="text-lg font-bold text-slate-900">{inr(product.price)}</span>
+            {off > 0 && <span className="ml-2 text-xs text-slate-400 line-through">{inr(product.mrp)}</span>}
+          </div>
+          <button
+            onClick={() => add(product.id)}
+            disabled={out}
+            aria-label={`Add ${product.name} to cart`}
+            className={`p-2.5 rounded-xl border transition disabled:opacity-40 ${inCart ? 'bg-green-50 border-green-200 text-green-700' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-blue-600 hover:text-white hover:border-blue-600'}`}
+          >
+            {inCart ? <Check size={18} /> : <ShoppingCart size={18} />}
+          </button>
+        </div>
+      </div>
+    </article>
+  );
+};
 
-      <div className="max-w-[1700px] mx-auto px-8 flex flex-col lg:flex-row gap-12">
-        
-        {/* Professional Filter Sidebar */}
-        <aside className="w-full lg:w-80 flex-shrink-0 space-y-12">
-           <div className="p-8 bg-white rounded-[40px] border border-slate-200 shadow-sm">
-              <h3 className="text-xs font-black uppercase tracking-[4px] text-slate-900 mb-8 flex items-center gap-3">
-                 <Filter size={18} /> Marketplace Discovery
-              </h3>
-              
-              <div className="space-y-10">
-                 <div>
-                    <label className="flex items-center gap-3 text-xs font-bold text-slate-600 cursor-pointer group hover:text-blue-600 transition-colors">
-                       <input type="checkbox" className="w-5 h-5 rounded-lg border-slate-300 bg-slate-50 text-blue-600 focus:ring-blue-600" defaultChecked />
-                       <span className="uppercase tracking-widest">In Stock Global Registry</span>
-                    </label>
-                 </div>
+const Products: React.FC = () => {
+  const { products, loading, error, refreshCatalog } = useProducts();
+  const { search } = useLocation();
+  const params = new URLSearchParams(search);
+  const q = params.get('q') ?? '';
+  const brand = params.get('brand') ?? 'All';
+  const category = params.get('category') ?? 'All';
+  const sort = params.get('sort') ?? 'featured';
+  const inStock = params.get('instock') === '1';
 
-                 <div className="space-y-4 pt-6 border-t border-slate-50">
-                    <p className="text-[10px] font-black uppercase tracking-[3px] text-slate-400 mb-2">Portfolio Brands</p>
-                    <div className="space-y-2">
-                       {['All', Brand.NationalGeographic, Brand.Shraddha].map((b) => (
-                          <button 
-                            key={b} 
-                            onClick={() => setBrandFilter(b)}
-                            className={`flex items-center justify-between w-full text-left text-[11px] font-bold uppercase tracking-[2px] p-4 rounded-xl transition-all ${brandFilter === b ? 'bg-blue-600 text-white shadow-lg shadow-blue-100' : 'text-slate-600 hover:bg-slate-50'}`}
-                          >
-                             {b} {brandFilter === b && <Zap size={10} />}
-                          </button>
-                       ))}
-                    </div>
-                 </div>
+  useDocumentMeta(
+    brand !== 'All' ? `${brand} ${category !== 'All' ? titleCase(category) : 'Products'}` : 'Shop All Products',
+    'Buy original National Geographic bags, backpacks and suitcases and Shraddha brass jewellery from the authorised distributor in Delhi.',
+  );
 
-                 <div className="pt-6 border-t border-slate-50">
-                    <p className="text-[10px] font-black uppercase tracking-[3px] text-slate-400 mb-6">User Satisfaction Rating</p>
-                    {[4, 3, 2, 1].map(stars => (
-                       <button key={stars} className="flex items-center gap-2 text-[10px] font-bold text-slate-500 mb-4 hover:text-blue-600 transition-all group">
-                          <div className="flex text-amber-500/50 group-hover:text-amber-500 transition-colors">
-                            {[...Array(5)].map((_, i) => <Star key={i} size={12} fill={i < stars ? 'currentColor' : 'none'} />)}
-                          </div>
-                          <span className="uppercase tracking-[2px]">& ABOVE RANK</span>
-                       </button>
-                    ))}
-                 </div>
+  const setParam = (key: string, value: string | null) => {
+    const next = new URLSearchParams(search);
+    if (value === null || value === '' || value === 'All' || (key === 'sort' && value === 'featured')) next.delete(key);
+    else next.set(key, value);
+    const qs = next.toString();
+    navigate(`/products${qs ? `?${qs}` : ''}`, { replace: true });
+  };
+
+  const brands = useMemo(() => [...new Set(products.map((p) => p.brand))].sort(), [products]);
+  const categories = useMemo(
+    () => [...new Set(products.filter((p) => brand === 'All' || p.brand === brand).map((p) => p.category))].sort(),
+    [products, brand],
+  );
+
+  const filtered = useMemo(() => {
+    const needle = q.toLowerCase();
+    const list = products.filter((p) =>
+      (brand === 'All' || p.brand === brand) &&
+      (category === 'All' || p.category === category) &&
+      (!inStock || p.stock !== 0) &&
+      (!needle || [p.name, p.category, p.id, p.brand, p.description].some((f) => f.toLowerCase().includes(needle))),
+    );
+    const sorted = [...list];
+    if (sort === 'price-asc') sorted.sort((a, b) => a.price - b.price);
+    else if (sort === 'price-desc') sorted.sort((a, b) => b.price - a.price);
+    else if (sort === 'discount') sorted.sort((a, b) => percentOff(b.price, b.mrp) - percentOff(a.price, a.mrp));
+    else sorted.sort((a, b) => Number(a.stock === 0) - Number(b.stock === 0));
+    return sorted;
+  }, [products, brand, category, inStock, q, sort]);
+
+  const activeFilters = [
+    q && { label: `"${q}"`, clear: () => setParam('q', null) },
+    brand !== 'All' && { label: brand, clear: () => setParam('brand', null) },
+    category !== 'All' && { label: titleCase(category), clear: () => setParam('category', null) },
+    inStock && { label: 'In stock', clear: () => setParam('instock', null) },
+  ].filter(Boolean) as { label: string; clear: () => void }[];
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-24 lg:pt-28 pb-20">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold text-slate-900">Shop</h1>
+          <p className="text-sm text-slate-500 mt-1">100% original products, shipped from our Delhi warehouse.</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="relative md:hidden flex-grow">
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input type="search" defaultValue={q} onKeyDown={(e) => e.key === 'Enter' && setParam('q', (e.target as HTMLInputElement).value.trim())} placeholder="Search…" className="input pl-9 py-2.5" aria-label="Search products" />
+          </div>
+          <label className="flex items-center gap-2 text-sm text-slate-600">
+            <span className="hidden sm:inline">Sort</span>
+            <select value={sort} onChange={(e) => setParam('sort', e.target.value)} className="input py-2.5 w-auto">
+              {SORTS.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
+        <aside className="lg:w-60 flex-shrink-0">
+          <div className="card p-4 lg:p-5 lg:sticky lg:top-28 space-y-5">
+            <h2 className="text-sm font-semibold text-slate-900 flex items-center gap-2"><SlidersHorizontal size={16} /> Filters</h2>
+            <div>
+              <p className="text-xs font-semibold text-slate-500 mb-2">Brand</p>
+              <div className="flex lg:flex-col flex-wrap gap-1.5">
+                {['All', ...brands].map((b) => (
+                  <button key={b} onClick={() => { setParam('brand', b); }} className={`text-left text-sm px-3 py-2 rounded-lg transition ${brand === b ? 'bg-blue-600 text-white' : 'bg-slate-50 lg:bg-transparent text-slate-700 hover:bg-slate-100'}`}>
+                    {b === 'All' ? 'All brands' : b}
+                  </button>
+                ))}
               </div>
-           </div>
-
-           {/* Professional Insight Box (Replacing Shraddha AI's neon box) */}
-           <div className="p-8 rounded-[40px] bg-slate-900 text-white shadow-2xl relative overflow-hidden group">
-              <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-blue-400 mb-6">
-                 <ShieldCheck size={20} />
-              </div>
-              <h4 className="text-sm font-black text-white mb-2 uppercase tracking-[3px]">Official Assurance</h4>
-              <p className="text-[11px] text-slate-400 font-medium leading-relaxed">
-                 All assets listed are passed through a multi-point inspection node. Every <span className="text-white font-bold">Shraddha</span> item includes a certificate of coating authenticity.
-              </p>
-           </div>
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-slate-500 mb-2">Category</p>
+              <select value={category} onChange={(e) => setParam('category', e.target.value)} className="input py-2.5">
+                <option value="All">All categories</option>
+                {categories.map((c) => <option key={c} value={c}>{titleCase(c)}</option>)}
+              </select>
+            </div>
+            <label className="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
+              <input type="checkbox" checked={inStock} onChange={(e) => setParam('instock', e.target.checked ? '1' : null)} className="w-4 h-4 rounded border-slate-300 text-blue-600" />
+              In stock only
+            </label>
+            <div className="hidden lg:block rounded-xl bg-slate-900 text-white p-4">
+              <p className="text-sm font-semibold mb-1">Buying 10 or more?</p>
+              <p className="text-xs text-slate-300 mb-3">Get wholesale pricing for corporate gifting, retail and resale.</p>
+              <Link to="/bulk-order" className="text-xs font-semibold text-blue-300 hover:text-white">Request a bulk quote →</Link>
+            </div>
+          </div>
         </aside>
 
-        {/* Catalog Node Area */}
-        <main className="flex-grow space-y-10">
-           
-           {/* Navigation Context Bar */}
-           <div className="p-6 bg-white rounded-[40px] border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-center gap-6">
-              <div className="flex items-center gap-4">
-                 <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600"><Package size={20} /></div>
-                 <div>
-                    <h2 className="text-base font-bold text-slate-900 uppercase tracking-widest leading-none">Marketplace Catalog</h2>
-                    <p className="text-[9px] font-bold text-slate-500 uppercase tracking-[3px] mt-1.5">Official Inventory Hub / {filteredProducts.length} Items</p>
-                 </div>
-              </div>
+        <section className="flex-grow min-w-0">
+          <div className="flex flex-wrap items-center gap-2 mb-4 min-h-8">
+            <span className="text-sm text-slate-500">{loading ? 'Loading…' : `${filtered.length} product${filtered.length === 1 ? '' : 's'}`}</span>
+            {activeFilters.map((f) => (
+              <button key={f.label} onClick={f.clear} className="inline-flex items-center gap-1 text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100 px-2.5 py-1 rounded-full hover:bg-blue-100">
+                {f.label} <X size={12} />
+              </button>
+            ))}
+          </div>
 
-              <div className="relative w-full md:w-96 group">
-                 <Search size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-600 transition-colors" />
-                 <input 
-                   type="text" 
-                   value={searchQuery}
-                   onChange={(e) => setSearchQuery(e.target.value)}
-                   placeholder="Search Catalog Registry..." 
-                   className="w-full pl-14 pr-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-[11px] font-black uppercase tracking-[2px] text-slate-900 outline-none focus:bg-white focus:border-blue-600 transition-all "
-                 />
-              </div>
-           </div>
-
-           {/* High-Performance Product Grid (Optimized for 1L Range) */}
-           <motion.div 
-             layout
-             className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-8"
-           >
-              <AnimatePresence>
-                 {filteredProducts.map((product, i) => (
-                    <motion.div 
-                      key={product.id}
-                      layout
-                      initial={{ opacity: 0, y: 30 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ delay: i * 0.05 }}
-                      onClick={() => setSelectedProduct(product)}
-                      className="group bg-white rounded-[40px] overflow-hidden border border-slate-200 hover:border-blue-500/50 transition-all duration-500 p-5 cursor-pointer relative hover:shadow-2xl hover:shadow-blue-100"
-                    >
-                       <div className="relative aspect-square rounded-[32px] overflow-hidden mb-6 bg-slate-50 border border-slate-100 transition-all group-hover:bg-white p-4">
-                          <img src={product.image} className="w-full h-full object-contain mix-blend-multiply transition-transform duration-700 transform group-hover:scale-110" alt="" />
-                          <div className="absolute top-4 right-4 translate-x-10 translate-y-[-10px] group-hover:translate-x-0 group-hover:translate-y-0 transition-transform duration-500">
-                             <div className="w-10 h-10 rounded-xl bg-white/90 backdrop-blur-md flex items-center justify-center text-blue-600 shadow-xl border border-white"><ArrowUpRight size={18} /></div>
-                          </div>
-                       </div>
-
-                       <div className="px-2">
-                          <div className="flex justify-between items-start mb-3">
-                             <span className="text-[9px] font-bold text-blue-600 uppercase tracking-[3px] py-1">{product.brand}</span>
-                             <div className="flex text-amber-500 scale-90">
-                                <Star size={10} fill="currentColor" />
-                                <span className="text-[9px] font-black ml-1 text-slate-400">4.9 RANK</span>
-                             </div>
-                          </div>
-                          <h3 className="text-sm font-bold text-slate-800 mb-6 line-clamp-1 group-hover:text-blue-600 transition-color tracking-tight">{product.name}</h3>
-                          
-                          <div className="flex items-center justify-between mt-auto pt-4 border-t border-slate-50">
-                             <span className="text-2xl font-black text-slate-930 tracking-tighter">{product.price}</span>
-                             <button 
-                               onClick={(e) => { e.stopPropagation(); addToCart(product); }}
-                               className="p-3 bg-slate-50 hover:bg-blue-600 text-slate-400 hover:text-white rounded-2xl transition-all border border-slate-100 group-hover:border-blue-600/20"
-                             >
-                                <ShoppingCart size={18} />
-                             </button>
-                          </div>
-                       </div>
-                    </motion.div>
-                 ))}
-              </AnimatePresence>
-           </motion.div>
-
-           {filteredProducts.length === 0 && (
-              <div className="py-40 text-center">
-                 <div className="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-8 border border-slate-200">
-                    <Search size={40} className="text-slate-300" />
-                 </div>
-                 <h3 className="text-2xl font-bold text-slate-900 mb-2 uppercase tracking-widest">Inventory Node Empty</h3>
-                 <p className="text-slate-500 text-xs font-bold uppercase tracking-[5px]">No results match your current registry filters.</p>
-                 <button onClick={() => { setSearchQuery(''); setBrandFilter('All'); }} className="mt-10 text-blue-600 font-bold text-xs uppercase tracking-[3px] border-b border-blue-200 pb-2 hover:border-blue-600 transition-all">Reset Marketplace Access</button>
-              </div>
-           )}
-        </main>
+          {loading ? (
+            <div className="py-24 flex justify-center"><Spinner /></div>
+          ) : error && !products.length ? (
+            <div className="card p-10 text-center">
+              <p className="text-slate-700 font-medium mb-2">We couldn't load the catalogue.</p>
+              <p className="text-sm text-slate-500 mb-6">{error}</p>
+              <button onClick={refreshCatalog} className="btn-primary">Try again</button>
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="card p-10 text-center">
+              <p className="text-slate-700 font-medium mb-2">No products match these filters.</p>
+              <button onClick={() => navigate('/products', { replace: true })} className="text-sm font-semibold text-blue-600">Clear all filters</button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
+              {filtered.map((p) => <ProductCard key={p.id} product={p} />)}
+            </div>
+          )}
+        </section>
       </div>
     </div>
   );

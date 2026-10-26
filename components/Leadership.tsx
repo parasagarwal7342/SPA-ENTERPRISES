@@ -21,7 +21,7 @@ const Leadership: React.FC = () => {
   ];
 
   return (
-    <div className="bg-white py-32 px-10" id="management">
+    <div className="bg-white py-32 px-10" id="management" style={{ scrollMarginTop: 80 }}>
       <div className="max-w-[1400px] mx-auto">
         <div className="flex flex-col items-center text-center mb-24">
           <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-8"><Users size={24} /></div>

@@ -4,16 +4,21 @@ import App from './App';
 import './index.css';
 import { ProductProvider } from './ProductContext';
 import { AuthProvider } from './AuthContext';
+import { CartProvider } from './CartContext';
+import { redirectLegacyHash } from './lib/router';
+
+redirectLegacyHash();
 
 const rootElement = document.getElementById('root');
 if (!rootElement) throw new Error('Failed to find the root element');
 
-const root = ReactDOM.createRoot(rootElement);
-root.render(
+ReactDOM.createRoot(rootElement).render(
   <React.StrictMode>
     <AuthProvider>
       <ProductProvider>
-        <App />
+        <CartProvider>
+          <App />
+        </CartProvider>
       </ProductProvider>
     </AuthProvider>
   </React.StrictMode>

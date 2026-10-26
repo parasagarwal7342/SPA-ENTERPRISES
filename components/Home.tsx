@@ -1,7 +1,8 @@
 import React from 'react';
 import { Compass, ShieldCheck, ArrowUpRight, Zap, Star, Globe, Shield, CreditCard, Activity, ArrowRight, Package, Truck, RotateCcw } from 'lucide-react';
 import { useProducts } from '../ProductContext';
-import { Brand } from '../types';
+import { Link, useDocumentMeta } from '../lib/router';
+import { ProductCard } from './Products';
 import { motion } from 'framer-motion';
 import About from './About';
 import Leadership from './Leadership';
@@ -9,13 +10,15 @@ import Contact from './Contact';
 
 const Home: React.FC = () => {
   const { products } = useProducts();
+  useDocumentMeta('', 'SPA Enterprises, Delhi: authorised distributor of National Geographic bags, backpacks and suitcases and Shraddha brass jewellery. Free delivery in Delhi NCR, COD and bulk/corporate orders.');
+  const deals = [...products].filter((p) => p.stock !== 0 && p.mrp && p.mrp > p.price).sort((a, b) => (b.mrp! - b.price) / b.mrp! - (a.mrp! - a.price) / a.mrp!).slice(0, 8);
 
   return (
     <div className="bg-[#f8fafc] text-slate-900 pb-20">
       
       {/* High-End Professional Hero */}
-      <section className="relative min-h-[90vh] flex items-center bg-white overflow-hidden pt-20 border-b border-slate-100">
-        <div className="max-w-[1700px] mx-auto px-10 grid lg:grid-cols-2 gap-20 items-center justify-center">
+      <section className="relative lg:min-h-[85vh] flex items-center bg-white overflow-hidden pt-28 pb-16 lg:pb-0 border-b border-slate-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 grid lg:grid-cols-2 gap-12 lg:gap-20 items-center justify-center">
           
           <motion.div
             initial={{ opacity: 0, x: -30 }}
@@ -24,29 +27,28 @@ const Home: React.FC = () => {
             className="relative z-10"
           >
              <span className="inline-block px-4 py-1.5 rounded-full bg-blue-50 text-blue-700 text-[11px] font-black uppercase tracking-[2px] mb-8 border border-blue-100">
-                Official Marketplace / Distribution
+                Authorised Distributor · Delhi
              </span>
-             <h1 className="text-6xl md:text-7xl font-bold tracking-tight text-slate-930 leading-[1.05] mb-8">
+             <h1 className="text-4xl sm:text-6xl md:text-7xl font-bold tracking-tight text-slate-900 leading-[1.05] mb-6 sm:mb-8">
                Reliability <br/> in Every <span className="text-blue-600">Adventure</span>
              </h1>
              <p className="text-lg text-slate-500 max-w-xl font-medium leading-relaxed mb-12">
-               Discover the convergence of <span className="text-slate-900 font-bold">National Geographic</span> engineering 
-               and <span className="text-slate-900 font-bold">Shraddha</span> artisanal heritage. Authentic products 
-               distributed directly from our Delhi state-of-the-art facility.
+               Original <span className="text-slate-900 font-bold">National Geographic</span> bags, backpacks and suitcases, and
+               handcrafted <span className="text-slate-900 font-bold">Shraddha</span> brass jewellery, shipped directly from our Delhi warehouse.
              </p>
              <div className="flex flex-col sm:flex-row gap-5">
-                <a
-                  href="#products"
+                <Link
+                  to="/products"
                   className="bg-blue-600 text-white px-10 py-5 rounded-full text-sm font-bold shadow-xl shadow-blue-100 hover:bg-blue-700 transition-all flex items-center justify-center gap-3 group"
                 >
                   Start Shopping <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
-                </a>
-                <a
-                  href="#brands"
+                </Link>
+                <Link
+                  to="/bulk-order"
                   className="px-10 py-5 rounded-full border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all text-sm font-bold text-slate-700 flex items-center justify-center gap-3"
                 >
-                   View Collections <ArrowUpRight size={18} className="text-slate-400" />
-                </a>
+                   Bulk & Corporate Orders <ArrowUpRight size={18} className="text-slate-400" />
+                </Link>
              </div>
 
              <div className="mt-16 flex items-center gap-8 border-t border-slate-50 pt-10">
@@ -82,7 +84,7 @@ const Home: React.FC = () => {
                    <div className="flex items-center gap-4">
                       <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center"><Package size={24} /></div>
                       <div>
-                         <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Fresh Stock Node</p>
+                         <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">New arrivals</p>
                          <p className="text-sm font-bold text-slate-900">National Geographic Hardshells</p>
                       </div>
                    </div>
@@ -95,13 +97,13 @@ const Home: React.FC = () => {
 
       {/* Trust & Policy Strip */}
       <section className="py-12 bg-white border-b border-slate-100">
-        <div className="max-w-[1600px] mx-auto px-10 overflow-x-auto whitespace-nowrap scrollbar-hide">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 overflow-x-auto whitespace-nowrap scrollbar-hide">
            <div className="flex items-center justify-between gap-12">
               {[
-                { title: 'Dynamic Shipping Core', desc: 'Free in Delhi & PAN India >₹4,999', icon: Truck },
-                { title: '24-Hour Assurance', desc: 'Secure protocol protection', icon: Shield },
+                { title: 'Free Delivery', desc: 'Delhi NCR, and India above ₹4,999', icon: Truck },
+                { title: 'Secure Payments', desc: 'UPI, cards & Cash on Delivery', icon: Shield },
                 { title: '7-Day Returns', desc: 'Easy exchange policy', icon: RotateCcw },
-                { title: 'Official Distributor', desc: '100% Authentic registry', icon: ShieldCheck },
+                { title: 'Official Distributor', desc: '100% original products', icon: ShieldCheck },
               ].map((item, i) => (
                 <div key={i} className="flex items-center gap-4 group">
                    <div className="w-12 h-12 rounded-full bg-slate-50 text-slate-900 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
@@ -118,23 +120,23 @@ const Home: React.FC = () => {
       </section>
 
       {/* Flagship Brand Cards */}
-      <section id="brands" className="py-32 px-10">
-        <div className="max-w-[1600px] mx-auto">
+      <section id="brands" className="py-20 px-4 sm:px-6 scroll-mt-20">
+        <div className="max-w-7xl mx-auto">
            <div className="flex items-center justify-between mb-16">
               <div>
-                 <h2 className="text-4xl font-bold tracking-tight text-slate-900 mb-2">Prime Distributions</h2>
-                 <p className="text-slate-500 text-sm font-medium uppercase tracking-widest">Hand-selected high-tier asset classes</p>
+                 <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 mb-2">Our Brands</h2>
+                 <p className="text-slate-500 text-sm font-medium uppercase tracking-widest">Two brands, one trusted distributor</p>
               </div>
-              <a href="#products" className="group text-blue-600 font-bold text-sm flex items-center gap-2">
-                 Marketplace Overview <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-              </a>
+              <Link to="/products" className="group text-blue-600 font-bold text-sm hidden sm:flex items-center gap-2">
+                 Shop all <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+              </Link>
            </div>
 
            <div className="grid md:grid-cols-2 gap-10">
               {/* Nat Geo Card */}
               <motion.div 
                 whileHover={{ y: -10 }}
-                className="bg-white rounded-[40px] p-12 border border-slate-100 shadow-xl overflow-hidden relative group h-[550px] flex flex-col justify-end"
+                className="bg-white rounded-[32px] p-8 sm:p-12 border border-slate-100 shadow-xl overflow-hidden relative group h-[460px] sm:h-[550px] flex flex-col justify-end"
               >
                   <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
                       <img 
@@ -148,16 +150,16 @@ const Home: React.FC = () => {
                     <img src="/natgeo_final.png" className="h-10 mb-8 rounded-lg" alt="National Geographic logo" />
                     <h3 className="text-4xl font-bold text-slate-900 mb-4">Engineering <br/> for Explorers</h3>
                     <p className="text-slate-600 max-w-sm mb-10 text-base leading-relaxed">The pinnacle of travel engineering. Designed to survive the world's most demanding environments.</p>
-                    <a href="#products" className="inline-flex items-center gap-3 bg-slate-900 text-white px-8 py-4 rounded-full font-bold text-sm hover:scale-105 transition-all">
-                       View Collection <Compass size={18} />
-                    </a>
+                    <Link to="/products?brand=National+Geographic" className="inline-flex items-center gap-3 bg-slate-900 text-white px-8 py-4 rounded-full font-bold text-sm hover:scale-105 transition-all">
+                       Shop National Geographic <Compass size={18} />
+                    </Link>
                   </div>
               </motion.div>
 
               {/* Shraddha Card */}
               <motion.div 
                 whileHover={{ y: -10 }}
-                className="bg-blue-600 rounded-[40px] p-12 shadow-2xl shadow-blue-200 overflow-hidden relative group h-[550px] flex flex-col justify-end border border-blue-500"
+                className="bg-blue-600 rounded-[32px] p-8 sm:p-12 shadow-2xl shadow-blue-200 overflow-hidden relative group h-[460px] sm:h-[550px] flex flex-col justify-end border border-blue-500"
               >
                   <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
                       <img 
@@ -172,59 +174,36 @@ const Home: React.FC = () => {
                     <span className="inline-block px-3 py-1 bg-white/20 rounded-full text-[10px] font-black uppercase tracking-widest mb-6">Artisanal Heritage / Since 2021</span>
                     <h3 className="text-4xl font-bold mb-4">Shraddha <br/> Arts & Jewels</h3>
                     <p className="text-blue-50 text-base max-w-sm mb-10 leading-relaxed">Heritage stories woven into contemporary brass jewelry. Traditional craft for the modern profile.</p>
-                    <a href="#products" className="inline-flex items-center gap-3 bg-white text-blue-600 px-8 py-4 rounded-full font-bold text-sm hover:scale-105 transition-all">
-                       Examine Assets <ShieldCheck size={18} />
-                    </a>
+                    <Link to="/products?brand=Shraddha" className="inline-flex items-center gap-3 bg-white text-blue-600 px-8 py-4 rounded-full font-bold text-sm hover:scale-105 transition-all">
+                       Shop Shraddha <ShieldCheck size={18} />
+                    </Link>
                   </div>
               </motion.div>
            </div>
         </div>
       </section>
 
+      {deals.length > 0 && (
+        <section className="py-16 px-4 sm:px-6 bg-white border-y border-slate-100">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex items-end justify-between mb-8">
+              <div>
+                <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 flex items-center gap-3"><Zap size={24} className="text-amber-500" fill="currentColor" /> Best deals</h2>
+                <p className="text-sm text-slate-500 mt-1">The biggest savings on original products right now.</p>
+              </div>
+              <Link to="/products?sort=discount" className="text-blue-600 font-bold text-sm flex items-center gap-2">View all <ArrowRight size={16} /></Link>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-5">
+              {deals.map((p) => <ProductCard key={p.id} product={p} />)}
+            </div>
+          </div>
+        </section>
+      )}
+
        <About />
        <Leadership />
        <Contact />
  
-       {/* Top Sellers / Deals for 100k Users Proof UX */}
-      <section className="py-20 px-10">
-         <div className="max-w-[1600px] mx-auto bg-white rounded-[56px] border border-slate-100 p-16 shadow-2xl shadow-slate-200">
-            <div className="flex items-center justify-between mb-12">
-               <h2 className="text-3xl font-bold flex items-center gap-4 text-slate-900">
-                  <span className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600"><Zap size={24} fill="currentColor" /></span> Premier Inventory Deals
-               </h2>
-               <div className="text-sm font-bold text-slate-500 flex items-center gap-2">
-                  Network Status: <span className="text-green-600 px-3 py-1 rounded-lg bg-green-50 uppercase tracking-widest text-[10px]">Verified Nodes</span>
-               </div>
-            </div>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8">
-               {products.slice(0, 6).map((product, i) => (
-                  <motion.div 
-                    key={product.id}
-                    initial={{ opacity: 0 }}
-                    whileInView={{ opacity: 1 }}
-                    transition={{ delay: i * 0.1 }}
-                    className="group cursor-pointer"
-                  >
-                     <div className="aspect-square bg-slate-50 rounded-3xl overflow-hidden mb-6 border border-slate-100 group-hover:border-blue-200 transition-all p-4">
-                        <img src={product.image} className="w-full h-full object-contain mix-blend-multiply transition-transform duration-500 group-hover:scale-110" alt="" />
-                     </div>
-                     <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-2 px-1">{product.brand}</p>
-                     <h4 className="text-[13px] font-bold text-slate-900 line-clamp-2 group-hover:text-blue-600 transition-colors tracking-tight px-1">{product.name}</h4>
-                     
-                     <div className="flex items-center justify-between mt-4 px-1">
-                        <span className="text-lg font-black text-slate-930">{product.price}</span>
-                        <div className="w-8 h-8 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-all transform group-hover:rotate-12">
-                           <ArrowUpRight size={14} />
-                        </div>
-                     </div>
-                     <p className="px-1 text-[9px] text-green-600 font-bold uppercase mt-3 tracking-widest">In Stock / Delhi Hub</p>
-                  </motion.div>
-               ))}
-            </div>
-         </div>
-      </section>
-
     </div>
   );
 };

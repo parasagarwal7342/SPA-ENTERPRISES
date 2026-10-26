@@ -1,203 +1,153 @@
-import React, { useState } from 'react';
-import { Menu, X, ShoppingBag, User, Store, Search, LayoutDashboard, LogOut, ChevronDown, Briefcase, Zap } from 'lucide-react';
-import { useProducts } from '../ProductContext';
+import React, { useEffect, useState } from 'react';
+import { Menu, X, ShoppingBag, User, Search, LayoutDashboard, LogOut, Package, Truck, Briefcase } from 'lucide-react';
 import { useAuth } from '../AuthContext';
+import { useCart } from '../CartContext';
+import { Link, navigate, useLocation } from '../lib/router';
 
-interface NavbarProps {
-  currentPath: string;
-}
+const navItems = [
+  { label: 'Shop', to: '/products' },
+  { label: 'Bulk & Corporate', to: '/bulk-order' },
+  { label: 'Track Order', to: '/track' },
+  { label: 'About', to: '/#about' },
+  { label: 'Contact', to: '/#contact' },
+];
 
-const Navbar: React.FC<NavbarProps> = ({ currentPath }) => {
-  const { cartItems } = useProducts();
-  const { user, logout, isAuthenticated } = useAuth();
+const Navbar: React.FC = () => {
+  const { user, logout, isStaff } = useAuth();
+  const { count, lastAdded } = useCart();
+  const { path, search } = useLocation();
   const [isOpen, setIsOpen] = useState(false);
+  const [query, setQuery] = useState('');
+  const [bump, setBump] = useState(false);
 
-  const navItems = [
-    { label: 'Home', href: '#home' },
-    { label: 'About Us', href: '#about' },
-    { label: 'Management', href: '#management' },
-    { label: 'Products', href: '#products' },
-    { label: 'Contact Us', href: '#contact' },
-  ];
+  useEffect(() => {
+    if (path === '/products') setQuery(new URLSearchParams(search).get('q') ?? '');
+  }, [path, search]);
+
+  useEffect(() => {
+    if (!lastAdded) return;
+    setBump(true);
+    const t = setTimeout(() => setBump(false), 600);
+    return () => clearTimeout(t);
+  }, [lastAdded]);
+
+  const submitSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    navigate(query.trim() ? `/products?q=${encodeURIComponent(query.trim())}` : '/products');
+    setIsOpen(false);
+  };
+
+  const dashboardLink = user?.role === 'owner' ? '/owner' : user?.role === 'seller' ? '/staff' : null;
+
+  const CartButton = (
+    <Link to="/cart" aria-label={`Cart, ${count} items`} className={`relative p-2.5 rounded-xl hover:bg-slate-100 transition ${bump ? 'scale-110' : ''}`}>
+      <ShoppingBag size={22} />
+      {count > 0 && (
+        <span className="absolute -top-0.5 -right-0.5 bg-blue-600 text-white text-[10px] min-w-5 h-5 px-1 rounded-full flex items-center justify-center font-bold border-2 border-white">
+          {count}
+        </span>
+      )}
+    </Link>
+  );
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200">
-      <div className="max-w-[1600px] mx-auto px-6 h-20 flex items-center justify-between gap-10">
-        
-        {/* Brand Core Identity */}
-        <div 
-          className="flex-shrink-0 flex items-center gap-3 group cursor-pointer" 
-          onClick={() => {
-            if (window.location.hash === '#home' || !window.location.hash) {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            } else {
-                window.location.hash = '#home';
-            }
-          }}
-        >
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center transform group-hover:scale-105 transition-all duration-300 shadow-lg shadow-blue-100 overflow-hidden bg-white border border-slate-100">
-            <img src="/logo.png" className="w-full h-full object-contain" alt="SPA Logo" />
-          </div>
-          <div className="flex flex-col">
-            <span className="text-xl font-bold tracking-tight text-slate-900 leading-none">
-              SPA <span className="text-blue-600">ENTERPRISE</span>
-            </span>
-            <span className="text-[10px] text-slate-500 font-bold tracking-wider uppercase opacity-80">Official Distributor Hub</span>
-          </div>
-        </div>
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur border-b border-slate-200">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 lg:h-20 flex items-center gap-4 lg:gap-8">
+        <Link to="/" className="flex-shrink-0 flex items-center gap-2.5">
+          <img src="/logo.png" className="w-9 h-9 rounded-lg object-contain border border-slate-100" alt="" />
+          <span className="flex flex-col leading-none">
+            <span className="text-lg font-bold tracking-tight text-slate-900">SPA <span className="text-blue-600">ENTERPRISE</span></span>
+            <span className="text-[10px] text-slate-500 font-medium hidden sm:block mt-0.5">Authorised Distributor · Delhi</span>
+          </span>
+        </Link>
 
-        {/* Dynamic Search Interface */}
-        <div className="hidden lg:flex flex-grow max-w-2xl relative group">
-          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-blue-600 transition-colors">
-            <Search size={18} />
-          </div>
+        <form onSubmit={submitSearch} className="hidden lg:flex flex-grow max-w-md relative" role="search">
+          <Search size={17} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
-            type="text"
-            placeholder="Query Registry, Asset IDs, and Brands..."
-            className="w-full bg-slate-50/50 border border-slate-100 rounded-2xl py-3 pl-12 pr-6 text-sm text-slate-900 outline-none focus:bg-white focus:border-blue-600 focus:ring-8 focus:ring-blue-50 transition-all duration-200 shadow-sm"
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search bags, suitcases, jewellery…"
+            aria-label="Search products"
+            className="input pl-10 py-2.5 bg-slate-50"
           />
+        </form>
+
+        <div className="hidden md:flex items-center gap-6 ml-auto">
+          {navItems.map((item) => (
+            <Link
+              key={item.to}
+              to={item.to}
+              className={`text-sm font-medium transition hover:text-blue-600 ${path === item.to ? 'text-blue-600' : 'text-slate-600'}`}
+            >
+              {item.label}
+            </Link>
+          ))}
         </div>
 
-        {/* Global Desktop Protocol */}
-        <div className="hidden md:flex items-center gap-8">
-          <div className="flex gap-8 border-r border-slate-100 pr-8">
-            {navItems.map((item) => (
-              <a
-                key={item.label}
-                href={item.href}
-                className={`text-[12px] font-black uppercase tracking-widest transition-all duration-200 hover:text-blue-600 relative group ${
-                  currentPath === item.href ? 'text-blue-600' : 'text-slate-400'
-                }`}
-              >
-                {item.label}
-                {currentPath === item.href && (
-                   <span className="absolute -bottom-1 left-0 w-full h-[2px] bg-blue-600 rounded-full animate-in fade-in duration-500"></span>
-                )}
-              </a>
-            ))}
-          </div>
-
-          <div className="flex items-center gap-6">
-            {/* Context-Aware Portal Toggles */}
-            {isAuthenticated ? (
-               user?.role === 'owner' ? (
-                 <a href="#owner" className="flex items-center gap-3 text-slate-930 hover:text-blue-600 transition-all group">
-                    <div className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center group-hover:scale-105 transition-all shadow-xl shadow-slate-200">
-                       <Briefcase size={20} />
-                    </div>
-                    <div className="text-left hidden xl:block">
-                        <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest leading-none mb-1">Executive Hub</p>
-                        <p className="text-[13px] font-black leading-none">Owner Dashboard</p>
-                    </div>
-                 </a>
-               ) : user?.role === 'seller' ? (
-                 <a href="#seller" className="flex items-center gap-3 text-slate-930 hover:text-blue-600 transition-all group">
-                    <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center group-hover:scale-105 transition-all shadow-xl shadow-blue-100">
-                       <Store size={20} />
-                    </div>
-                    <div className="text-left hidden xl:block">
-                        <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest leading-none mb-1">Management Hub</p>
-                        <p className="text-[13px] font-black leading-none">Staff Portal</p>
-                    </div>
-                 </a>
-               ) : null
-            ) : (
-                <a href="#seller-login" className="flex items-center gap-3 text-slate-900 hover:text-blue-600 transition-all group">
-                    <Zap size={20} className="text-blue-600" />
-                    <div className="text-left hidden lg:block">
-                        <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest leading-none mb-1">Distribution</p>
-                        <p className="text-[13px] font-black leading-none">Internal Team access</p>
-                    </div>
-                </a>
-            )}
-
-            {/* Combined Profile Hub */}
-            <div className="flex items-center gap-4">
-               {isAuthenticated ? (
-                   <div className="flex items-center gap-4 pl-4 border-l border-slate-100 group relative">
-                      <div className="text-right hidden xl:block">
-                         <p className="text-[12px] font-bold text-slate-900 leading-none">{user?.name}</p>
-                         <button onClick={logout} className="text-[9px] text-red-500 font-black uppercase tracking-widest hover:text-red-600 transition-colors mt-1.5 flex items-center gap-1 justify-end">
-                            <LogOut size={10} /> Sign Out Node
-                         </button>
-                      </div>
-                      <img src={user?.avatar} alt="Profile" className="w-10 h-10 rounded-xl border border-slate-200 group-hover:border-blue-300 transition-all hover:scale-105" />
-                   </div>
-               ) : (
-                   <a href="#login" className="bg-slate-900 text-white px-7 py-3 rounded-2xl text-[11px] font-black uppercase tracking-[3px] flex items-center gap-3 hover:bg-slate-800 shadow-xl shadow-slate-200 transition-all">
-                      <User size={18} /> Initialize Login
-                   </a>
-               )}
-
-               {/* Asset Collection State */}
-               <div 
-                 onClick={() => window.location.hash = '#checkout'}
-                 className="relative text-slate-900 cursor-pointer group p-3 hover:bg-slate-50 rounded-2xl transition-all border border-transparent hover:border-slate-100"
-               >
-                 <ShoppingBag size={22} className="group-hover:text-blue-600 transition-colors" />
-                 <span className="absolute top-1 right-1 bg-blue-600 text-white text-[9px] w-5 h-5 rounded-full flex items-center justify-center font-bold border-2 border-white shadow-xl">
-                   {cartItems.length}
-                 </span>
-               </div>
+        <div className="flex items-center gap-1 ml-auto md:ml-0">
+          {user ? (
+            <div className="hidden md:flex items-center gap-1">
+              {dashboardLink && (
+                <Link to={dashboardLink} className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100">
+                  {user.role === 'owner' ? <Briefcase size={18} /> : <LayoutDashboard size={18} />} Dashboard
+                </Link>
+              )}
+              <Link to="/account" className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100" title={user.email}>
+                <User size={18} /> {user.name.split(' ')[0]}
+              </Link>
+              <button onClick={() => { logout(); navigate('/'); }} className="p-2.5 rounded-xl text-slate-400 hover:text-red-600 hover:bg-red-50" aria-label="Sign out" title="Sign out">
+                <LogOut size={18} />
+              </button>
             </div>
-          </div>
-        </div>
-
-        {/* Mobile Control Nodes */}
-        <div className="md:hidden flex items-center gap-4">
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="text-slate-900 p-2 hover:bg-slate-50 rounded-xl border border-transparent hover:border-slate-100 transition-all"
-          >
-            {isOpen ? <X size={28} /> : <Menu size={28} />}
+          ) : (
+            <Link to="/login" className="hidden md:flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100">
+              <User size={18} /> Sign in
+            </Link>
+          )}
+          {CartButton}
+          <button onClick={() => setIsOpen(!isOpen)} className="md:hidden p-2.5 rounded-xl hover:bg-slate-100" aria-label="Menu" aria-expanded={isOpen}>
+            {isOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
       </div>
 
-      {/* Mobile Drawer Interface */}
       {isOpen && (
-        <div className="md:hidden absolute top-20 left-4 right-4 bg-white border border-slate-200 rounded-[32px] shadow-2xl animate-in fade-in slide-in-from-top duration-500 z-[100] mt-4 overflow-hidden">
-          <div className="px-8 py-10 space-y-6">
+        <div className="md:hidden border-t border-slate-200 bg-white px-4 pb-6 pt-4 space-y-4 shadow-xl">
+          <form onSubmit={submitSearch} className="relative" role="search">
+            <Search size={17} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search products…" aria-label="Search products" className="input pl-10" />
+          </form>
+          <div className="grid gap-1">
             {navItems.map((item) => (
-              <a
-                key={item.label}
-                href={item.href}
-                onClick={() => setIsOpen(false)}
-                className={`block px-8 py-5 rounded-[24px] text-xs font-black uppercase tracking-widest transition-all ${
-                  currentPath === item.href
-                    ? 'bg-blue-50 text-blue-600 shadow-inner'
-                    : 'text-slate-400 hover:bg-slate-50 hover:text-slate-900'
-                }`}
-              >
+              <Link key={item.to} to={item.to} onClick={() => setIsOpen(false)} className="px-3 py-3 rounded-xl text-base font-medium text-slate-700 hover:bg-slate-50">
                 {item.label}
-              </a>
+              </Link>
             ))}
-            <div className="pt-8 border-t border-slate-50 space-y-4">
-               {isAuthenticated && (
-                  <div className="px-8 mb-6 flex items-center gap-4">
-                     <img src={user?.avatar} className="w-12 h-12 rounded-2xl border border-slate-100" />
-                     <div className="flex flex-col">
-                        <p className="text-sm font-bold text-slate-930 leading-none">{user?.name}</p>
-                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1.5">{user?.role}</p>
-                     </div>
-                  </div>
-               )}
-              <a
-                href={isAuthenticated ? (user?.role === 'owner' ? '#owner' : user?.role === 'seller' ? '#seller' : '#home') : '#login'}
-                onClick={() => setIsOpen(false)}
-                className="w-full bg-slate-930 text-white py-5 rounded-[24px] text-center font-black text-xs uppercase tracking-[4px] block shadow-xl shadow-slate-200"
-              >
-                {isAuthenticated ? 'Enter Management' : 'Initialize Portal'}
-              </a>
-              {isAuthenticated && (
-                <button
-                    onClick={() => { logout(); setIsOpen(false); }}
-                    className="w-full py-5 border border-red-100 text-red-500 rounded-[24px] text-center font-black text-xs uppercase tracking-[4px] block hover:bg-red-50 transition-all"
-                >
-                    Sign Out Terminal
+          </div>
+          <div className="border-t border-slate-100 pt-4 grid gap-1">
+            {user ? (
+              <>
+                {dashboardLink && (
+                  <Link to={dashboardLink} onClick={() => setIsOpen(false)} className="flex items-center gap-3 px-3 py-3 rounded-xl font-medium text-slate-700 hover:bg-slate-50">
+                    <LayoutDashboard size={18} /> {isStaff && user.role === 'owner' ? 'Owner dashboard' : 'Staff dashboard'}
+                  </Link>
+                )}
+                <Link to="/account" onClick={() => setIsOpen(false)} className="flex items-center gap-3 px-3 py-3 rounded-xl font-medium text-slate-700 hover:bg-slate-50">
+                  <Package size={18} /> My orders
+                </Link>
+                <button onClick={() => { logout(); setIsOpen(false); navigate('/'); }} className="flex items-center gap-3 px-3 py-3 rounded-xl font-medium text-red-600 hover:bg-red-50 text-left">
+                  <LogOut size={18} /> Sign out
                 </button>
-              )}
-            </div>
+              </>
+            ) : (
+              <>
+                <Link to="/login" onClick={() => setIsOpen(false)} className="btn-dark w-full">Sign in / Create account</Link>
+                <Link to="/track" onClick={() => setIsOpen(false)} className="flex items-center gap-3 px-3 py-3 rounded-xl font-medium text-slate-700 hover:bg-slate-50">
+                  <Truck size={18} /> Track an order
+                </Link>
+              </>
+            )}
           </div>
         </div>
       )}

@@ -1,10 +1,13 @@
 
 import React from 'react';
 import { ShieldCheck, Calendar, RefreshCw, PhoneCall } from 'lucide-react';
+import { InquiryForm } from './BulkQuote';
+import { useDocumentMeta } from '../lib/router';
 
 const Warranty: React.FC = () => {
+  useDocumentMeta('Warranty, Returns & Support');
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white pt-16 lg:pt-20">
       {/* Header */}
       <div className="bg-amber-500 py-20 text-white text-center">
         <div className="max-w-7xl mx-auto px-4">
@@ -86,13 +89,17 @@ const Warranty: React.FC = () => {
                 <p className="text-sm text-gray-500 italic mb-6">
                   * Warranty does not cover accidental damage, theft, or misuse contrary to product care instructions.
                 </p>
-                <a href="#contact" className="block w-full text-center bg-white text-gray-900 py-4 rounded-xl font-bold hover:bg-gray-100 transition-all">
+                <a href="#claim" className="block w-full text-center bg-white text-gray-900 py-4 rounded-xl font-bold hover:bg-gray-100 transition-all">
                   Initiate Claim
                 </a>
               </div>
             </div>
           </div>
         </div>
+      </div>
+      <div id="claim" className="max-w-3xl mx-auto px-4 pb-20" style={{ scrollMarginTop: 90 }}>
+        <h2 className="text-2xl font-bold text-slate-900 mb-4">Raise a warranty or return request</h2>
+        <InquiryForm defaultType="support" compact />
       </div>
     </div>
   );

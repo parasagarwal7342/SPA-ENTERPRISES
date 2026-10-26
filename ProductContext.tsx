@@ -1,117 +1,63 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Product } from './types';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { api } from './lib/api';
+import type { Product, SiteConfig } from './types';
 
-const API_BASE = "https://spa-enterprises-production.up.railway.app/api";
+const DEFAULT_CONFIG: SiteConfig = {
+  paymentMethods: ['cod'],
+  razorpayKeyId: null,
+  shipping: {
+    delhi: { label: 'Delhi / NCR', fee: 0, freeAbove: 0 },
+    india: { label: 'Rest of India', fee: 500, freeAbove: 4999 },
+    global: { label: 'International', fee: 2500, freeAbove: 0 },
+  },
+  whatsappNumber: '919312277087',
+  aiEnabled: false,
+};
 
 interface ProductContextType {
-    products: Product[];
-    brandFilter: string;
-    setBrandFilter: (brand: string) => void;
-    cartItems: Product[];
-    addToCart: (product: Product) => void;
-    clearCart: () => void;
-    addProduct: (product: Product) => void;
-    removeProduct: (id: string) => void;
-    updateProduct: (product: Product) => void;
-    resetToDefault: () => void;
-    refreshCatalog: () => void;
+  products: Product[];
+  loading: boolean;
+  error: string | null;
+  config: SiteConfig;
+  refreshCatalog: () => Promise<void>;
+  getProduct: (id: string) => Product | undefined;
 }
 
 const ProductContext = createContext<ProductContextType | undefined>(undefined);
 
 export const ProductProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [products, setProducts] = useState<Product[]>([]);
-    const [brandFilter, setBrandFilter] = useState('All');
-    const [cartItems, setCartItems] = useState<Product[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [config, setConfig] = useState<SiteConfig>(DEFAULT_CONFIG);
 
-    const addToCart = (product: Product) => {
-        setCartItems(prev => [...prev, product]);
-    };
+  const refreshCatalog = useCallback(async () => {
+    try {
+      setProducts(await api<Product[]>('/products'));
+      setError(null);
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-    const clearCart = () => {
-        setCartItems([]);
-    };
+  useEffect(() => {
+    refreshCatalog();
+    api<SiteConfig>('/config').then(setConfig).catch(() => { /* keep defaults */ });
+  }, [refreshCatalog]);
 
-    const refreshCatalog = async () => {
-        try {
-            const response = await fetch(`${API_BASE}/products`);
-            const data = await response.json();
-            setProducts(data);
-            console.log("[SPA ENTERPRISE] Inventory Hub Sync: OK");
-        } catch (error) {
-            console.error("[SPA ENTERPRISE] Sync Latency Detected:", error);
-        }
-    };
+  const byId = useMemo(() => new Map(products.map((p) => [p.id, p])), [products]);
 
-    useEffect(() => {
-        refreshCatalog();
-    }, []);
-
-    const addProduct = async (product: Product) => {
-        try {
-            const response = await fetch(`${API_BASE}/products`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(product),
-            });
-            if (response.ok) refreshCatalog();
-        } catch (error) {
-            console.error("Failed to distribute asset:", error);
-        }
-    };
-
-    const removeProduct = async (id: string) => {
-        try {
-            const response = await fetch(`${API_BASE}/products/${id}`, {
-                method: 'DELETE'
-            });
-            if (response.ok) refreshCatalog();
-        } catch (error) {
-            console.error("Failed to decommission asset:", error);
-        }
-    };
-
-    const updateProduct = async (updatedProduct: Product) => {
-        try {
-            const response = await fetch(`${API_BASE}/products/${updatedProduct.id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(updatedProduct),
-            });
-            if (response.ok) refreshCatalog();
-        } catch (error) {
-            console.error("Failed to update registry record:", error);
-        }
-    };
-
-    const resetToDefault = () => {
-        // This would require a backend reset endpoint in production
-        refreshCatalog();
-    };
-
-    return (
-        <ProductContext.Provider value={{
-            products,
-            brandFilter,
-            setBrandFilter,
-            cartItems,
-            addToCart,
-            clearCart,
-            addProduct,
-            removeProduct,
-            updateProduct,
-            resetToDefault,
-            refreshCatalog
-        }}>
-            {children}
-        </ProductContext.Provider>
-    );
+  return (
+    <ProductContext.Provider value={{ products, loading, error, config, refreshCatalog, getProduct: (id) => byId.get(id) }}>
+      {children}
+    </ProductContext.Provider>
+  );
 };
 
 export const useProducts = () => {
-    const context = useContext(ProductContext);
-    if (!context) {
-        throw new Error('useProducts must be used within a ProductProvider');
-    }
-    return context;
+  const context = useContext(ProductContext);
+  if (!context) throw new Error('useProducts must be used within a ProductProvider');
+  return context;
 };

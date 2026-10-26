@@ -1,70 +1,70 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { api, tokenStore } from './lib/api';
+import type { User, UserRole } from './types';
 
-export type UserRole = 'customer' | 'seller' | 'owner' | 'guest';
-
-interface User {
-    id: string;
-    name: string;
-    email: string;
-    role: UserRole;
-    avatar?: string;
-}
+export type { UserRole };
 
 interface AuthContextType {
-    user: User | null;
-    isAuthenticated: boolean;
-    login: (email: string, password: string, role: UserRole) => Promise<boolean>;
-    logout: () => void;
+  user: User | null;
+  isAuthenticated: boolean;
+  isStaff: boolean;
+  loading: boolean;
+  login: (email: string, password: string) => Promise<User>;
+  register: (data: { name: string; email: string; phone?: string; password: string }) => Promise<User>;
+  logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [user, setUser] = useState<User | null>(null);
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(!!tokenStore.get());
 
-    useEffect(() => {
-        const storedUser = localStorage.getItem('spa_user');
-        if (storedUser) {
-            setUser(JSON.parse(storedUser));
-            setIsAuthenticated(true);
-        }
-    }, []);
+  useEffect(() => {
+    try { localStorage.removeItem('spa_user'); localStorage.removeItem('app_password'); } catch { /* old mock-login data */ }
+    if (!tokenStore.get()) return;
+    api<{ user: User }>('/auth/me')
+      .then((r) => setUser(r.user))
+      .catch(() => tokenStore.set(null))
+      .finally(() => setLoading(false));
+  }, []);
 
-    const login = async (email: string, password: string, role: UserRole): Promise<boolean> => {
-        // Mock authentication logic for SPA Enterprise Teams
-        const mockUser: User = {
-            id: Math.random().toString(36).substr(2, 9),
-            name: role === 'owner' ? 'Owner SPA' : (role === 'seller' ? 'Team SPA' : 'Valued Customer'),
-            email: email,
-            role: role,
-            avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${email}`
-        };
+  useEffect(() => {
+    const onSignedOut = () => setUser(null);
+    window.addEventListener('spa:signed-out', onSignedOut);
+    return () => window.removeEventListener('spa:signed-out', onSignedOut);
+  }, []);
 
-        setUser(mockUser);
-        setIsAuthenticated(true);
-        localStorage.setItem('spa_user', JSON.stringify(mockUser));
-        return true;
-    };
+  const finish = (r: { token: string; user: User }) => {
+    tokenStore.set(r.token);
+    setUser(r.user);
+    return r.user;
+  };
 
-    const logout = () => {
-        setUser(null);
-        setIsAuthenticated(false);
-        localStorage.removeItem('spa_user');
-        window.location.hash = '#home';
-    };
+  const login = useCallback(async (email: string, password: string) =>
+    finish(await api<{ token: string; user: User }>('/auth/login', { body: { email, password } })), []);
 
-    return (
-        <AuthContext.Provider value={{ user, isAuthenticated, login, logout }}>
-            {children}
-        </AuthContext.Provider>
-    );
+  const register = useCallback(async (data: { name: string; email: string; phone?: string; password: string }) =>
+    finish(await api<{ token: string; user: User }>('/auth/register', { body: data })), []);
+
+  const logout = useCallback(() => {
+    tokenStore.set(null);
+    setUser(null);
+  }, []);
+
+  return (
+    <AuthContext.Provider value={{
+      user, loading, login, register, logout,
+      isAuthenticated: !!user,
+      isStaff: user?.role === 'seller' || user?.role === 'owner',
+    }}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
 export const useAuth = () => {
-    const context = useContext(AuthContext);
-    if (!context) {
-        throw new Error('useAuth must be used within an AuthProvider');
-    }
-    return context;
+  const context = useContext(AuthContext);
+  if (!context) throw new Error('useAuth must be used within an AuthProvider');
+  return context;
 };

@@ -47,6 +47,17 @@ export const productRoutes: FastifyPluginAsync = async (app) => {
     return (db.prepare(sql).all(...params) as ProductRow[]).map(toProduct);
   });
 
+  // Served at spaenterprise.in/sitemap.xml through a Vercel rewrite.
+  app.get('/api/sitemap.xml', async (_req, reply) => {
+    const site = (process.env.SITE_URL || 'https://spaenterprise.in').replace(/\/$/, '');
+    const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+    const rows = db.prepare('SELECT id, updated_at FROM products WHERE active = 1').all() as { id: string; updated_at: string }[];
+    const urls = ['/', '/products', '/bulk-order', '/track', '/warranty', '/policies'].map((p) => `<url><loc>${site}${p}</loc></url>`)
+      .concat(rows.map((r) => `<url><loc>${esc(`${site}/products/${encodeURIComponent(r.id)}`)}</loc><lastmod>${r.updated_at.slice(0, 10)}</lastmod></url>`));
+    reply.type('application/xml').header('Cache-Control', 'public, max-age=3600');
+    return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls.join('')}</urlset>`;
+  });
+
   app.get('/api/products/meta', async () => {
     const categories = db.prepare(`SELECT category, COUNT(*) AS count FROM products WHERE active = 1 GROUP BY category ORDER BY category`).all();
     const brands = db.prepare(`SELECT brand, COUNT(*) AS count FROM products WHERE active = 1 GROUP BY brand ORDER BY brand`).all();

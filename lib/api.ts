@@ -1,7 +1,6 @@
 // Single place for talking to the backend. Set VITE_API_URL to the API's base
-// (e.g. https://your-api.up.railway.app) in Vercel; it defaults to the current one.
-const RAW_BASE = import.meta.env.VITE_API_URL || 'https://spa-enterprises-production.up.railway.app';
-export const API_BASE = RAW_BASE.replace(/\/+$/, '').replace(/\/api$/, '');
+// (e.g. https://your-api.up.railway.app) in Vercel; vite.config.ts normalises it.
+export const API_BASE: string = import.meta.env.VITE_API_ORIGIN;
 
 const TOKEN_KEY = 'spa_token';
 
